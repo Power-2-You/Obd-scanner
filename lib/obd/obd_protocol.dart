@@ -22,7 +22,8 @@ enum ObdProtocol {
   final String label;
 
   bool get isCan => number >= 6 && number <= 12;
-  bool get isCan29Bit => this == can29x500 || this == can29x250 || this == j1939;
+  bool get isCan29Bit =>
+      this == can29x500 || this == can29x250 || this == j1939;
   bool get isLegacy => number >= 1 && number <= 5;
 
   /// Parses the reply to `ATDPN`, e.g. `A6` (automatic, currently 6) or `6`.

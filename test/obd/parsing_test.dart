@@ -56,7 +56,10 @@ void main() {
     });
 
     test('NO DATA', () {
-      expect(ElmReply.parse('0142', ElmFixtures.noData).status, ElmStatus.noData);
+      expect(
+        ElmReply.parse('0142', ElmFixtures.noData).status,
+        ElmStatus.noData,
+      );
     });
 
     test('UNABLE TO CONNECT after SEARCHING', () {
@@ -66,13 +69,17 @@ void main() {
     });
 
     test('BUS INIT error', () {
-      expect(ElmReply.parse('0100', ElmFixtures.busInitError).status,
-          ElmStatus.busInitError);
+      expect(
+        ElmReply.parse('0100', ElmFixtures.busInitError).status,
+        ElmStatus.busInitError,
+      );
     });
 
     test('unknown command', () {
-      expect(ElmReply.parse('ATXX', ElmFixtures.unknownCommand).status,
-          ElmStatus.unknownCommand);
+      expect(
+        ElmReply.parse('ATXX', ElmFixtures.unknownCommand).status,
+        ElmStatus.unknownCommand,
+      );
     });
 
     test('STOPPED is transient', () {
@@ -119,8 +126,12 @@ void main() {
       final m = parse(ElmFixtures.dtcsMultiFrame, '03', ObdProtocol.can11x500);
       expect(m.single.data.length, 10);
       expect(m.single.partial, isFalse);
-      expect(DtcCodec.decodeAll(m.single.data.sublist(2)),
-          ['P0301', 'P0420', 'P0171', 'U0100']);
+      expect(DtcCodec.decodeAll(m.single.data.sublist(2)), [
+        'P0301',
+        'P0420',
+        'P0171',
+        'U0100',
+      ]);
     });
 
     test('multi-frame VIN', () {
@@ -131,24 +142,27 @@ void main() {
 
     test('partial multi-frame is flagged', () {
       final r = FrameParser.parse(
-          ElmReply.parse('0902', ElmFixtures.partialMultiFrame).lines,
-          ObdProtocol.can11x500);
+        ElmReply.parse('0902', ElmFixtures.partialMultiFrame).lines,
+        ObdProtocol.can11x500,
+      );
       expect(r.messages.single.partial, isTrue);
       expect(r.problems.single, contains('Partial'));
     });
 
     test('out-of-order consecutive frame is detected', () {
       final r = FrameParser.parse(
-          ElmReply.parse('0902', ElmFixtures.outOfOrder).lines,
-          ObdProtocol.can11x500);
+        ElmReply.parse('0902', ElmFixtures.outOfOrder).lines,
+        ObdProtocol.can11x500,
+      );
       expect(r.problems.any((p) => p.contains('Out-of-order')), isTrue);
       expect(r.messages.single.partial, isTrue);
     });
 
     test('malformed line is reported, not decoded', () {
       final r = FrameParser.parse(
-          ElmReply.parse('010C', ElmFixtures.malformedLine).lines,
-          ObdProtocol.can11x500);
+        ElmReply.parse('010C', ElmFixtures.malformedLine).lines,
+        ObdProtocol.can11x500,
+      );
       expect(r.messages, isEmpty);
       expect(r.problems, isNotEmpty);
     });
@@ -160,10 +174,14 @@ void main() {
     });
 
     test('headers-off multi-line format', () {
-      const raw = '014\r0:490201'
+      const raw =
+          '014\r0:490201'
           '4D4748\r1:44454D30303030\r2:30303030303031\r\r';
       final m = parse(raw, '0902', ObdProtocol.can11x500);
-      expect(String.fromCharCodes(m.single.data.sublist(3)), 'MGHDEM00000000001');
+      expect(
+        String.fromCharCodes(m.single.data.sublist(3)),
+        'MGHDEM00000000001',
+      );
     });
 
     test('unknown protocol is inferred from frame shape', () {
@@ -191,8 +209,12 @@ void main() {
     test('ISO 9141 multi-frame DTCs are concatenated', () {
       final m = parse(ElmFixtures.legacyDtcs, '03', ObdProtocol.iso9141);
       expect(m.single.data.first, 0x43);
-      expect(DtcCodec.decodeAll(m.single.data.sublist(1)),
-          ['P0301', 'P0420', 'P0171', 'U0100']);
+      expect(DtcCodec.decodeAll(m.single.data.sublist(1)), [
+        'P0301',
+        'P0420',
+        'P0171',
+        'U0100',
+      ]);
     });
   });
 
@@ -226,7 +248,21 @@ void main() {
 
     test('supported PID bitmap', () {
       final pids = SupportedPids.decodeBitmap(0x00, [0xBE, 0x3F, 0xA8, 0x13]);
-      expect(pids, containsAll([0x01, 0x03, 0x04, 0x05, 0x06, 0x07, 0x0C, 0x0D, 0x11, 0x20]));
+      expect(
+        pids,
+        containsAll([
+          0x01,
+          0x03,
+          0x04,
+          0x05,
+          0x06,
+          0x07,
+          0x0C,
+          0x0D,
+          0x11,
+          0x20,
+        ]),
+      );
       expect(pids.contains(0x02), isFalse);
       expect(pids.contains(0x0A), isFalse);
     });

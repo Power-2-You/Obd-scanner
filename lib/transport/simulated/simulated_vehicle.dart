@@ -60,14 +60,28 @@ class SimulatedVehicle {
     required this.vin,
     required this.reachable,
     DateTime Function()? clock,
-  })  : _clock = clock ?? DateTime.now,
-        _start = (clock ?? DateTime.now)();
+  }) : _clock = clock ?? DateTime.now,
+       _start = (clock ?? DateTime.now)();
 
   factory SimulatedVehicle.forScenario(
     SimulationScenario s, {
     DateTime Function()? clock,
   }) {
-    const allBasic = {0x01, 0x04, 0x05, 0x0B, 0x0C, 0x0D, 0x0F, 0x10, 0x11, 0x1F, 0x2F, 0x42, 0x46};
+    const allBasic = {
+      0x01,
+      0x04,
+      0x05,
+      0x0B,
+      0x0C,
+      0x0D,
+      0x0F,
+      0x10,
+      0x11,
+      0x1F,
+      0x2F,
+      0x42,
+      0x46,
+    };
     switch (s) {
       case SimulationScenario.healthyDriving:
         return SimulatedVehicle(
@@ -76,7 +90,13 @@ class SimulatedVehicle {
           vin: 'MGHDEM00000000001',
           reachable: true,
           clock: clock,
-          ecus: [SimulatedEcu(canHeader: 0x7E8, legacyAddress: 0x10, supportedPids: allBasic)],
+          ecus: [
+            SimulatedEcu(
+              canHeader: 0x7E8,
+              legacyAddress: 0x10,
+              supportedPids: allBasic,
+            ),
+          ],
         );
       case SimulationScenario.checkEngine:
         return SimulatedVehicle(
@@ -140,7 +160,13 @@ class SimulatedVehicle {
           vin: 'MGHDEM00000000005',
           reachable: false,
           clock: clock,
-          ecus: [SimulatedEcu(canHeader: 0x7E8, legacyAddress: 0x10, supportedPids: allBasic)],
+          ecus: [
+            SimulatedEcu(
+              canHeader: 0x7E8,
+              legacyAddress: 0x10,
+              supportedPids: allBasic,
+            ),
+          ],
         );
     }
   }
@@ -157,7 +183,8 @@ class SimulatedVehicle {
 
   double get _t => _clock().difference(_start).inMilliseconds / 1000.0;
 
-  bool get _driving => scenario == SimulationScenario.healthyDriving ||
+  bool get _driving =>
+      scenario == SimulationScenario.healthyDriving ||
       scenario == SimulationScenario.multiModule;
 
   double get speed {
@@ -175,14 +202,21 @@ class SimulatedVehicle {
     if (!_driving) return 760 + 18 * math.sin(_t * 1.7) + misfire;
     final v = speed;
     // Rough gear model: rpm rises with speed, drops at shifts.
-    final gearSpeed = v < 18 ? 18 : v < 35 ? 35 : v < 55 ? 55 : 80;
+    final gearSpeed = v < 18
+        ? 18
+        : v < 35
+        ? 35
+        : v < 55
+        ? 55
+        : 80;
     final ratio = (v / gearSpeed).clamp(0.0, 1.0);
     return 820 + 1900 * ratio + 40 * math.sin(_t * 2.1);
   }
 
   double get coolant => 38 + 52 * (1 - math.exp(-_t / 140));
   double get intakeAir => 24 + 3 * math.sin(_t / 40);
-  double get throttle => _driving ? 15 + speed * 0.35 + 6 * math.sin(_t * 0.9).abs() : 14.5;
+  double get throttle =>
+      _driving ? 15 + speed * 0.35 + 6 * math.sin(_t * 0.9).abs() : 14.5;
   double get load => _driving ? 22 + speed * 0.45 : 24 + 3 * math.sin(_t * 0.7);
   double get map => 32 + load * 0.6;
   double get maf => 2.4 + rpm / 900 + load / 25;
@@ -195,8 +229,12 @@ class SimulatedVehicle {
   /// Raw data bytes for a mode 01 PID, or null if [ecu] does not support it.
   List<int>? mode01(SimulatedEcu ecu, int pid) {
     if (pid == 0x00 || pid == 0x20 || pid == 0x40) {
-      final relevant = ecu.supportedPids.where((p) => p > pid && p <= pid + 0x20);
-      final next = ecu.supportedPids.any((p) => p > pid + 0x20) ? {pid + 0x20} : <int>{};
+      final relevant = ecu.supportedPids.where(
+        (p) => p > pid && p <= pid + 0x20,
+      );
+      final next = ecu.supportedPids.any((p) => p > pid + 0x20)
+          ? {pid + 0x20}
+          : <int>{};
       if (pid != 0 && relevant.isEmpty) return null;
       return _bitmap(pid, {...relevant, ...next});
     }
@@ -205,11 +243,11 @@ class SimulatedVehicle {
     int pct(double v) => (v * 255 / 100).round().clamp(0, 255);
     return switch (pid) {
       0x01 => [
-          (ecu.storedDtcs.isNotEmpty ? 0x80 : 0) | ecu.storedDtcs.length,
-          0x07,
-          0x65,
-          0x00,
-        ],
+        (ecu.storedDtcs.isNotEmpty ? 0x80 : 0) | ecu.storedDtcs.length,
+        0x07,
+        0x65,
+        0x00,
+      ],
       0x04 => [pct(load)],
       0x05 => [b(coolant + 40)],
       0x0B => [b(map)],
@@ -243,7 +281,8 @@ class SimulatedVehicle {
 
   static List<int> encodeDtc(String code) {
     const letters = {'P': 0, 'C': 1, 'B': 2, 'U': 3};
-    final a = (letters[code[0]]! << 6) |
+    final a =
+        (letters[code[0]]! << 6) |
         (int.parse(code[1]) << 4) |
         int.parse(code[2], radix: 16);
     final b = int.parse(code.substring(3), radix: 16);

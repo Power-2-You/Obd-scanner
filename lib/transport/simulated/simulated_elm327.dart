@@ -69,12 +69,16 @@ class SimulatedElm327 {
       case 'RV':
         return ['${vehicle.batteryVoltage.toStringAsFixed(1)}V'];
       case 'DPN':
-        if (!protocolEstablished) return [protocolSetting == 0 ? 'A0' : '$protocolSetting'];
+        if (!protocolEstablished) {
+          return [protocolSetting == 0 ? 'A0' : '$protocolSetting'];
+        }
         final n = vehicle.protocol.number.toRadixString(16).toUpperCase();
         return [protocolSetting == 0 ? 'A$n' : n];
       case 'DP':
         if (!protocolEstablished) return const ['AUTO'];
-        return ['${protocolSetting == 0 ? 'AUTO, ' : ''}${vehicle.protocol.label}'];
+        return [
+          '${protocolSetting == 0 ? 'AUTO, ' : ''}${vehicle.protocol.label}',
+        ];
     }
     final flag = RegExp(r'^([ELSH])([01])$').firstMatch(a);
     if (flag != null) {
@@ -122,7 +126,9 @@ class SimulatedElm327 {
     }
     for (final (ecu, payloads) in messages) {
       for (final p in payloads) {
-        lines.addAll(vehicle.protocol.isCan ? _formatCan(ecu, p) : _formatLegacy(ecu, p));
+        lines.addAll(
+          vehicle.protocol.isCan ? _formatCan(ecu, p) : _formatLegacy(ecu, p),
+        );
       }
     }
     return lines;
@@ -137,13 +143,21 @@ class SimulatedElm327 {
         if (cmd.length != 4) return null;
         final pid = int.parse(cmd.substring(2), radix: 16);
         final data = vehicle.mode01(ecu, pid);
-        return data == null ? null : [[0x41, pid, ...data]];
+        return data == null
+            ? null
+            : [
+                [0x41, pid, ...data],
+              ];
       case '03':
       case '07':
         final codes = mode == '03' ? ecu.storedDtcs : ecu.pendingDtcs;
         final service = mode == '03' ? 0x43 : 0x47;
         final bytes = [for (final c in codes) ...SimulatedVehicle.encodeDtc(c)];
-        if (isCan) return [[service, codes.length, ...bytes]];
+        if (isCan) {
+          return [
+            [service, codes.length, ...bytes],
+          ];
+        }
         final frames = <List<int>>[];
         for (var i = 0; i < bytes.length || frames.isEmpty; i += 6) {
           final chunk = bytes.length > i
@@ -153,12 +167,24 @@ class SimulatedElm327 {
         }
         return frames;
       case '0A':
-        return isCan ? [[0x4A, 0x00]] : null;
+        return isCan
+            ? [
+                [0x4A, 0x00],
+              ]
+            : null;
       case '09':
-        if (cmd == '0900') return [[0x49, 0x00, 0x40, 0x00, 0x00, 0x00]];
+        if (cmd == '0900') {
+          return [
+            [0x49, 0x00, 0x40, 0x00, 0x00, 0x00],
+          ];
+        }
         if (cmd != '0902' || ecu != vehicle.ecus.first) return null;
         final vinBytes = vehicle.vin.codeUnits;
-        if (isCan) return [[0x49, 0x02, 0x01, ...vinBytes]];
+        if (isCan) {
+          return [
+            [0x49, 0x02, 0x01, ...vinBytes],
+          ];
+        }
         final padded = [0, 0, 0, ...vinBytes];
         return [
           for (var seq = 1; seq <= 5; seq++)
@@ -196,14 +222,18 @@ class SimulatedElm327 {
       var seq = 1;
       while (idx < len) {
         final end = (idx + 7).clamp(0, len);
-        out.add('${(seq & 0xF).toRadixString(16).toUpperCase()}:$sep${_join(payload.sublist(idx, end))}');
+        out.add(
+          '${(seq & 0xF).toRadixString(16).toUpperCase()}:$sep${_join(payload.sublist(idx, end))}',
+        );
         idx = end;
         seq++;
       }
       return out;
     }
     final out = <String>[];
-    out.add('$header$sep${_join([0x10 | (len >> 8), len & 0xFF, ...payload.sublist(0, 6)])}');
+    out.add(
+      '$header$sep${_join([0x10 | (len >> 8), len & 0xFF, ...payload.sublist(0, 6)])}',
+    );
     var idx = 6;
     var seq = 1;
     while (idx < len) {
@@ -226,6 +256,8 @@ class SimulatedElm327 {
         : [0x48, 0x6B, ecu.legacyAddress];
     final frame = [...head, ...payload];
     final checksum = frame.fold<int>(0, (a, b) => a + b) & 0xFF;
-    return [_join([...frame, checksum])];
+    return [
+      _join([...frame, checksum]),
+    ];
   }
 }

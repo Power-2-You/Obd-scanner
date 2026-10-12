@@ -4,8 +4,21 @@ import 'package:my_garage_hero_iq/obd/commands/command_policy.dart';
 void main() {
   test('allows the read-only command set', () {
     for (final c in [
-      'ATZ', 'ATE0', 'ATL0', 'ATS0', 'ATH1', 'ATSP0', 'ATDPN', 'ATRV',
-      '0100', '010C', '0142', '03', '07', '0A', '0902',
+      'ATZ',
+      'ATE0',
+      'ATL0',
+      'ATS0',
+      'ATH1',
+      'ATSP0',
+      'ATDPN',
+      'ATRV',
+      '0100',
+      '010C',
+      '0142',
+      '03',
+      '07',
+      '0A',
+      '0902',
     ]) {
       expect(CommandPolicy.isAllowed(c), isTrue, reason: c);
     }

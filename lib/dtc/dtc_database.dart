@@ -28,9 +28,12 @@ class DtcDatabase {
     'P0012': '"A" Camshaft Position – Timing Over-Retarded (Bank 1)',
     'P0013': '"B" Camshaft Position Actuator Circuit (Bank 1)',
     'P0014': '"B" Camshaft Position – Timing Over-Advanced or System Performance (Bank 1)',
-    'P0016': 'Crankshaft Position – Camshaft Position Correlation (Bank 1 Sensor A)',
-    'P0017': 'Crankshaft Position – Camshaft Position Correlation (Bank 1 Sensor B)',
-    'P0018': 'Crankshaft Position – Camshaft Position Correlation (Bank 2 Sensor A)',
+    'P0016':
+        'Crankshaft Position – Camshaft Position Correlation (Bank 1 Sensor A)',
+    'P0017':
+        'Crankshaft Position – Camshaft Position Correlation (Bank 1 Sensor B)',
+    'P0018':
+        'Crankshaft Position – Camshaft Position Correlation (Bank 2 Sensor A)',
     'P0020': '"A" Camshaft Position Actuator Circuit (Bank 2)',
     'P0021': '"A" Camshaft Position – Timing Over-Advanced or System Performance (Bank 2)',
     // Oxygen sensor heaters
@@ -44,10 +47,12 @@ class DtcDatabase {
     'P0101': 'Mass or Volume Air Flow Circuit Range/Performance Problem',
     'P0102': 'Mass or Volume Air Flow Circuit Low Input',
     'P0103': 'Mass or Volume Air Flow Circuit High Input',
-    'P0105': 'Manifold Absolute Pressure/Barometric Pressure Circuit Malfunction',
+    'P0105':
+        'Manifold Absolute Pressure/Barometric Pressure Circuit Malfunction',
     'P0106': 'Manifold Absolute Pressure/Barometric Pressure Circuit Range/Performance Problem',
     'P0107': 'Manifold Absolute Pressure/Barometric Pressure Circuit Low Input',
-    'P0108': 'Manifold Absolute Pressure/Barometric Pressure Circuit High Input',
+    'P0108':
+        'Manifold Absolute Pressure/Barometric Pressure Circuit High Input',
     'P0110': 'Intake Air Temperature Circuit Malfunction',
     'P0111': 'Intake Air Temperature Circuit Range/Performance Problem',
     'P0112': 'Intake Air Temperature Circuit Low Input',
@@ -133,7 +138,8 @@ class DtcDatabase {
     'P0312': 'Cylinder 12 Misfire Detected',
     // Knock / crank / cam sensors
     'P0325': 'Knock Sensor 1 Circuit Malfunction (Bank 1 or Single Sensor)',
-    'P0326': 'Knock Sensor 1 Circuit Range/Performance (Bank 1 or Single Sensor)',
+    'P0326':
+        'Knock Sensor 1 Circuit Range/Performance (Bank 1 or Single Sensor)',
     'P0327': 'Knock Sensor 1 Circuit Low Input (Bank 1 or Single Sensor)',
     'P0328': 'Knock Sensor 1 Circuit High Input (Bank 1 or Single Sensor)',
     'P0330': 'Knock Sensor 2 Circuit Malfunction (Bank 2)',
@@ -172,13 +178,16 @@ class DtcDatabase {
     'P0441': 'Evaporative Emission Control System Incorrect Purge Flow',
     'P0442': 'Evaporative Emission Control System Leak Detected (small leak)',
     'P0443': 'Evaporative Emission Control System Purge Control Valve Circuit Malfunction',
-    'P0446': 'Evaporative Emission Control System Vent Control Circuit Malfunction',
+    'P0446':
+        'Evaporative Emission Control System Vent Control Circuit Malfunction',
     'P0449': 'Evaporative Emission Control System Vent Valve/Solenoid Circuit Malfunction',
-    'P0451': 'Evaporative Emission Control System Pressure Sensor Range/Performance',
+    'P0451':
+        'Evaporative Emission Control System Pressure Sensor Range/Performance',
     'P0452': 'Evaporative Emission Control System Pressure Sensor Low Input',
     'P0453': 'Evaporative Emission Control System Pressure Sensor High Input',
     'P0455': 'Evaporative Emission Control System Leak Detected (gross leak)',
-    'P0456': 'Evaporative Emission Control System Leak Detected (very small leak)',
+    'P0456':
+        'Evaporative Emission Control System Leak Detected (very small leak)',
     'P0457': 'Evaporative Emission Control System Leak Detected (fuel cap loose/off)',
     'P0460': 'Fuel Level Sensor Circuit Malfunction',
     'P0461': 'Fuel Level Sensor Circuit Range/Performance',
@@ -239,8 +248,10 @@ class DtcDatabase {
     'U0073': 'Control Module Communication Bus Off',
     'U0100': 'Lost Communication With ECM/PCM "A"',
     'U0101': 'Lost Communication With TCM',
-    'U0121': 'Lost Communication With Anti-Lock Brake System (ABS) Control Module',
+    'U0121':
+        'Lost Communication With Anti-Lock Brake System (ABS) Control Module',
     'U0140': 'Lost Communication With Body Control Module',
-    'U0155': 'Lost Communication With Instrument Panel Cluster (IPC) Control Module',
+    'U0155':
+        'Lost Communication With Instrument Panel Cluster (IPC) Control Module',
   };
 }

@@ -38,9 +38,9 @@ class GattServiceInfo {
   final List<GattCharacteristicInfo> characteristics;
 
   Map<String, Object> toJson() => {
-        'uuid': uuid,
-        'characteristics': characteristics.map((c) => c.toJson()).toList(),
-      };
+    'uuid': uuid,
+    'characteristics': characteristics.map((c) => c.toJson()).toList(),
+  };
 }
 
 /// Identification details shown on the developer screen.

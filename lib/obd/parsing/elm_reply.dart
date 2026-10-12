@@ -21,24 +21,24 @@ enum ElmStatus {
 
 extension ElmStatusText on ElmStatus {
   String get description => switch (this) {
-        ElmStatus.ok => 'OK',
-        ElmStatus.noData => 'NO DATA – no module answered this request',
-        ElmStatus.unableToConnect =>
-          'UNABLE TO CONNECT – the scanner could not find a vehicle bus. '
-              'Is the ignition on and the OBD plug fully seated?',
-        ElmStatus.busInitError =>
-          'BUS INIT ERROR – the vehicle did not respond to initialisation',
-        ElmStatus.busError => 'BUS ERROR – electrical problem on the OBD bus',
-        ElmStatus.busBusy => 'BUS BUSY – too much traffic on the vehicle bus',
-        ElmStatus.canError => 'CAN ERROR – CAN bus communication problem',
-        ElmStatus.dataError => 'DATA ERROR – corrupted response from vehicle',
-        ElmStatus.bufferFull => 'BUFFER FULL – scanner could not keep up',
-        ElmStatus.stopped => 'STOPPED – command was interrupted',
-        ElmStatus.unknownCommand => '? – scanner did not understand command',
-        ElmStatus.adapterAlert => 'Scanner low-power or activity alert',
-        ElmStatus.adapterError => 'Scanner internal error',
-        ElmStatus.empty => 'Empty response',
-      };
+    ElmStatus.ok => 'OK',
+    ElmStatus.noData => 'NO DATA – no module answered this request',
+    ElmStatus.unableToConnect =>
+      'UNABLE TO CONNECT – the scanner could not find a vehicle bus. '
+          'Is the ignition on and the OBD plug fully seated?',
+    ElmStatus.busInitError =>
+      'BUS INIT ERROR – the vehicle did not respond to initialisation',
+    ElmStatus.busError => 'BUS ERROR – electrical problem on the OBD bus',
+    ElmStatus.busBusy => 'BUS BUSY – too much traffic on the vehicle bus',
+    ElmStatus.canError => 'CAN ERROR – CAN bus communication problem',
+    ElmStatus.dataError => 'DATA ERROR – corrupted response from vehicle',
+    ElmStatus.bufferFull => 'BUFFER FULL – scanner could not keep up',
+    ElmStatus.stopped => 'STOPPED – command was interrupted',
+    ElmStatus.unknownCommand => '? – scanner did not understand command',
+    ElmStatus.adapterAlert => 'Scanner low-power or activity alert',
+    ElmStatus.adapterError => 'Scanner internal error',
+    ElmStatus.empty => 'Empty response',
+  };
 
   /// Worth retrying once: transient bus or timing conditions.
   bool get isTransient =>

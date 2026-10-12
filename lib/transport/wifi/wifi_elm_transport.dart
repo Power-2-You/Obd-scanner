@@ -37,14 +37,14 @@ class WifiElmTransport extends BaseTransport {
 
   @override
   TransportDetails get details => TransportDetails(
-        kind: TransportKind.wifiElm327,
-        deviceId: '$host:$port',
-        deviceName: 'Wi-Fi scanner',
-        endpoint: '$host:$port',
-        profileName: 'ELM327 TCP',
-        profileSource:
-            'Default endpoint from SwiftOBD2 wifiManager.swift (unverified for IQ)',
-      );
+    kind: TransportKind.wifiElm327,
+    deviceId: '$host:$port',
+    deviceName: 'Wi-Fi scanner',
+    endpoint: '$host:$port',
+    profileName: 'ELM327 TCP',
+    profileSource:
+        'Default endpoint from SwiftOBD2 wifiManager.swift (unverified for IQ)',
+  );
 
   /// A TCP stream to a user-chosen ELM327 endpoint. Identification via ATZ
   /// still has to succeed before any OBD request is sent.
@@ -72,13 +72,19 @@ class WifiElmTransport extends BaseTransport {
       setState(LinkState.connected);
     } on UnsupportedError catch (e) {
       setState(LinkState.disconnected);
-      throw TransportException(TransportFailure.bluetoothUnavailable,
-          'Wi-Fi scanners are not supported on this platform.', detail: '$e');
+      throw TransportException(
+        TransportFailure.bluetoothUnavailable,
+        'Wi-Fi scanners are not supported on this platform.',
+        detail: '$e',
+      );
     } catch (e) {
       setState(LinkState.disconnected);
-      throw TransportException(TransportFailure.connectFailed,
-          'Could not reach a Wi-Fi scanner at $host:$port. Join the scanner\'s '
-          'Wi-Fi network in Settings first.', detail: '$e');
+      throw TransportException(
+        TransportFailure.connectFailed,
+        'Could not reach a Wi-Fi scanner at $host:$port. Join the scanner\'s '
+        'Wi-Fi network in Settings first.',
+        detail: '$e',
+      );
     }
   }
 
@@ -87,7 +93,9 @@ class WifiElmTransport extends BaseTransport {
     final s = _socket;
     if (s == null || state != LinkState.connected) {
       throw const TransportException(
-          TransportFailure.disconnected, 'Wi-Fi scanner not connected.');
+        TransportFailure.disconnected,
+        'Wi-Fi scanner not connected.',
+      );
     }
     s.add(data);
     await s.flush();

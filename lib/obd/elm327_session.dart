@@ -27,21 +27,35 @@ class ScannerIdentity {
 
   bool get recognised => family != 'unrecognised';
 
-  static final RegExp _elm = RegExp(r'ELM ?327\s*v?([0-9.]+[a-z]?)?', caseSensitive: false);
-  static final RegExp _stn = RegExp(r'(STN\d{4})\s*v?([0-9.]+)?', caseSensitive: false);
+  static final RegExp _elm = RegExp(
+    r'ELM ?327\s*v?([0-9.]+[a-z]?)?',
+    caseSensitive: false,
+  );
+  static final RegExp _stn = RegExp(
+    r'(STN\d{4})\s*v?([0-9.]+)?',
+    caseSensitive: false,
+  );
 
   static ScannerIdentity fromBanner(String banner) {
     final b = banner.trim();
     final stn = _stn.firstMatch(b);
     if (stn != null) {
-      return ScannerIdentity(banner: b, family: stn.group(1)!.toUpperCase(), version: stn.group(2));
+      return ScannerIdentity(
+        banner: b,
+        family: stn.group(1)!.toUpperCase(),
+        version: stn.group(2),
+      );
     }
     if (b.toUpperCase().contains('OBDLINK')) {
       return ScannerIdentity(banner: b, family: 'OBDLink (STN)');
     }
     final elm = _elm.firstMatch(b);
     if (elm != null) {
-      return ScannerIdentity(banner: b, family: 'ELM327', version: elm.group(1));
+      return ScannerIdentity(
+        banner: b,
+        family: 'ELM327',
+        version: elm.group(1),
+      );
     }
     return ScannerIdentity(banner: b, family: 'unrecognised');
   }
@@ -118,14 +132,19 @@ class Elm327Session {
   // ------------------------------------------------------------ handshake --
 
   Future<ScannerIdentity> identify() async {
-    final reply = await channel.send('ATZ',
-        timeout: const Duration(seconds: 6), retries: 1);
+    final reply = await channel.send(
+      'ATZ',
+      timeout: const Duration(seconds: 6),
+      retries: 1,
+    );
     final banner = reply.lines.join(' ');
     final id = ScannerIdentity.fromBanner(banner);
     identity = id;
     if (!id.recognised) {
-      log.error(LogCategory.connection,
-          'Device did not identify as ELM327/STN: "$banner"');
+      log.error(
+        LogCategory.connection,
+        'Device did not identify as ELM327/STN: "$banner"',
+      );
       throw ObdException(
         ObdFailure.notElmCompatible,
         'This device did not identify itself as an OBD-II scanner, so no '
@@ -133,15 +152,19 @@ class Elm327Session {
         detail: banner.isEmpty ? reply.status.name : banner,
       );
     }
-    log.info(LogCategory.connection,
-        'Scanner identified: ${id.family} ${id.version ?? ''}'.trim());
+    log.info(
+      LogCategory.connection,
+      'Scanner identified: ${id.family} ${id.version ?? ''}'.trim(),
+    );
     return id;
   }
 
   Future<void> initialise() async {
     if (!isIdentified) {
-      throw const ObdException(ObdFailure.notReady,
-          'Scanner must be identified before initialisation.');
+      throw const ObdException(
+        ObdFailure.notReady,
+        'Scanner must be identified before initialisation.',
+      );
     }
     // Required settings – failure means the device is not usable.
     await _expectOk('ATE0', required: true);
@@ -159,8 +182,11 @@ class Elm327Session {
     if (r.hasOkToken) return;
     final msg = '$cmd not acknowledged (${r.status.name}: ${r.raw.trim()})';
     if (required) {
-      throw ObdException(ObdFailure.adapterError,
-          'The scanner rejected a setup command.', detail: msg);
+      throw ObdException(
+        ObdFailure.adapterError,
+        'The scanner rejected a setup command.',
+        detail: msg,
+      );
     }
     warnings.add(msg);
     log.warn(LogCategory.connection, msg);
@@ -173,8 +199,11 @@ class Elm327Session {
   /// automatic protocol search, which can take several seconds.
   Future<SupportedPids> discoverSupportedPids() async {
     _requireReady();
-    final first = await channel.send('0100',
-        timeout: const Duration(seconds: 20), retries: 1);
+    final first = await channel.send(
+      '0100',
+      timeout: const Duration(seconds: 20),
+      retries: 1,
+    );
     _throwIfVehicleUnreachable(first);
 
     final dpn = await channel.send('ATDPN');
@@ -195,13 +224,19 @@ class Elm327Session {
         break;
       }
       final cmd = '01${base.toRadixString(16).padLeft(2, '0').toUpperCase()}';
-      final r = await channel.send(cmd, timeout: const Duration(seconds: 4), retries: 1);
+      final r = await channel.send(
+        cmd,
+        timeout: const Duration(seconds: 4),
+        retries: 1,
+      );
       if (!r.isOk) break;
       result = _mergeBitmap(result, base, r);
     }
     supported = result;
-    log.info(LogCategory.decode,
-        'Supported PIDs: ${result.pids.map((p) => p.toRadixString(16).padLeft(2, '0').toUpperCase()).join(' ')}');
+    log.info(
+      LogCategory.decode,
+      'Supported PIDs: ${result.pids.map((p) => p.toRadixString(16).padLeft(2, '0').toUpperCase()).join(' ')}',
+    );
     return result;
   }
 
@@ -224,18 +259,24 @@ class Elm327Session {
         return;
       case ElmStatus.unableToConnect:
       case ElmStatus.busInitError:
-        throw ObdException(ObdFailure.unableToConnect,
-            'The scanner could not talk to the vehicle. Turn the ignition on '
-            '(or start the engine) and check the OBD plug is fully seated.',
-            detail: r.status.description);
+        throw ObdException(
+          ObdFailure.unableToConnect,
+          'The scanner could not talk to the vehicle. Turn the ignition on '
+          '(or start the engine) and check the OBD plug is fully seated.',
+          detail: r.status.description,
+        );
       case ElmStatus.noData:
-        throw ObdException(ObdFailure.noData,
-            'The vehicle did not answer. Turn the ignition on and try again.',
-            detail: r.status.description);
+        throw ObdException(
+          ObdFailure.noData,
+          'The vehicle did not answer. Turn the ignition on and try again.',
+          detail: r.status.description,
+        );
       default:
-        throw ObdException(ObdFailure.busError,
-            'Communication problem with the vehicle.',
-            detail: r.status.description);
+        throw ObdException(
+          ObdFailure.busError,
+          'Communication problem with the vehicle.',
+          detail: r.status.description,
+        );
     }
   }
 
@@ -246,42 +287,68 @@ class Elm327Session {
     final def = Pids.all[pid];
     final now = DateTime.now();
     if (def == null && pid != Pids.monitorStatus) {
-      return PidReading(pid: pid, status: ReadingStatus.unsupported, time: now,
-          message: 'Not decoded by this app');
+      return PidReading(
+        pid: pid,
+        status: ReadingStatus.unsupported,
+        time: now,
+        message: 'Not decoded by this app',
+      );
     }
     if (supported.knows(pid) && !supported.supports(pid)) {
-      return PidReading(pid: pid, status: ReadingStatus.unsupported, time: now,
-          message: 'Vehicle does not report this value');
+      return PidReading(
+        pid: pid,
+        status: ReadingStatus.unsupported,
+        time: now,
+        message: 'Vehicle does not report this value',
+      );
     }
     final cmd = '01${pid.toRadixString(16).padLeft(2, '0').toUpperCase()}';
     final reply = await channel.send(cmd, retries: 1);
     if (reply.status == ElmStatus.noData) {
-      return PidReading(pid: pid, status: ReadingStatus.noData, time: now,
-          raw: reply.raw, message: 'No module answered');
+      return PidReading(
+        pid: pid,
+        status: ReadingStatus.noData,
+        time: now,
+        raw: reply.raw,
+        message: 'No module answered',
+      );
     }
     if (!reply.isOk) {
-      return PidReading(pid: pid, status: ReadingStatus.error, time: now,
-          raw: reply.raw, message: reply.status.description);
+      return PidReading(
+        pid: pid,
+        status: ReadingStatus.error,
+        time: now,
+        raw: reply.raw,
+        message: reply.status.description,
+      );
     }
     final parsed = _parse(reply);
     final bytesNeeded = pid == Pids.monitorStatus ? 4 : def!.dataBytes;
     final candidates = parsed.messages
-        .where((m) =>
-            m.data.length >= 2 + bytesNeeded &&
-            m.data[0] == 0x41 &&
-            m.data[1] == pid &&
-            !m.partial)
+        .where(
+          (m) =>
+              m.data.length >= 2 + bytesNeeded &&
+              m.data[0] == 0x41 &&
+              m.data[1] == pid &&
+              !m.partial,
+        )
         .toList();
     if (candidates.isEmpty) {
-      final negative = parsed.messages.any((m) => m.data.isNotEmpty && m.data[0] == 0x7F);
-      log.warn(LogCategory.parser,
-          'No valid 41 $pid frame in reply (${parsed.problems.join('; ')})');
+      final negative = parsed.messages.any(
+        (m) => m.data.isNotEmpty && m.data[0] == 0x7F,
+      );
+      log.warn(
+        LogCategory.parser,
+        'No valid 41 $pid frame in reply (${parsed.problems.join('; ')})',
+      );
       return PidReading(
         pid: pid,
         status: negative ? ReadingStatus.unsupported : ReadingStatus.error,
         time: now,
         raw: reply.raw,
-        message: negative ? 'Module rejected the request' : 'Malformed response',
+        message: negative
+            ? 'Module rejected the request'
+            : 'Malformed response',
       );
     }
     // Prefer the engine module when several modules answer.
@@ -291,10 +358,18 @@ class Elm327Session {
     final value = pid == Pids.monitorStatus
         ? MonitorStatus.decode(payload).dtcCount.toDouble()
         : def!.decode(payload);
-    log.debug(LogCategory.decode,
-        '${def?.shortName ?? 'Monitor status'} = ${value.toStringAsFixed(def?.decimals ?? 0)} ${def?.unit ?? 'DTCs'} (${m.ecuLabel})');
-    return PidReading(pid: pid, status: ReadingStatus.live, time: now,
-        value: value, ecu: m.ecuLabel, raw: reply.raw);
+    log.debug(
+      LogCategory.decode,
+      '${def?.shortName ?? 'Monitor status'} = ${value.toStringAsFixed(def?.decimals ?? 0)} ${def?.unit ?? 'DTCs'} (${m.ecuLabel})',
+    );
+    return PidReading(
+      pid: pid,
+      status: ReadingStatus.live,
+      time: now,
+      value: value,
+      ecu: m.ecuLabel,
+      raw: reply.raw,
+    );
   }
 
   /// Reads mode 01 PID 01 – MIL state and number of stored emission DTCs.
@@ -328,12 +403,19 @@ class Elm327Session {
       DtcStatus.pending => ('07', 0x47),
       DtcStatus.permanent => ('0A', 0x4A),
     };
-    final reply = await channel.send(mode,
-        timeout: const Duration(seconds: 6), retries: 1);
+    final reply = await channel.send(
+      mode,
+      timeout: const Duration(seconds: 6),
+      retries: 1,
+    );
     if (reply.status == ElmStatus.noData) {
-      return DtcReadResult(status: kind, codes: const [],
-          respondingModules: const [], rawStatus: reply.status,
-          problems: const ['No module answered this request.']);
+      return DtcReadResult(
+        status: kind,
+        codes: const [],
+        respondingModules: const [],
+        rawStatus: reply.status,
+        problems: const ['No module answered this request.'],
+      );
     }
     if (!reply.isOk) {
       _throwIfVehicleUnreachable(reply);
@@ -354,25 +436,41 @@ class Elm327Session {
       // (length 2 + 2n); legacy responses do not (length 1 + 6k).
       final skip = (m.data.length - 1).isOdd ? 2 : 1;
       if (m.partial) problems.add('Incomplete response from ${m.ecuLabel}.');
-      final payload = m.data.length > skip ? m.data.sublist(skip) : const <int>[];
+      final payload = m.data.length > skip
+          ? m.data.sublist(skip)
+          : const <int>[];
       for (final code in DtcCodec.decodeAll(payload)) {
         final dtc = DiagnosticTroubleCode(
-            code: code, status: kind, ecu: m.ecu, ecuLabel: m.ecuLabel);
+          code: code,
+          status: kind,
+          ecu: m.ecu,
+          ecuLabel: m.ecuLabel,
+        );
         if (!codes.contains(dtc)) codes.add(dtc);
       }
     }
-    log.info(LogCategory.decode,
-        '${kind.label} DTCs: ${codes.isEmpty ? 'none' : codes.map((c) => c.code).join(', ')}');
-    return DtcReadResult(status: kind, codes: codes,
-        respondingModules: modules, problems: problems, rawStatus: reply.status);
+    log.info(
+      LogCategory.decode,
+      '${kind.label} DTCs: ${codes.isEmpty ? 'none' : codes.map((c) => c.code).join(', ')}',
+    );
+    return DtcReadResult(
+      status: kind,
+      codes: codes,
+      respondingModules: modules,
+      problems: problems,
+      rawStatus: reply.status,
+    );
   }
 
   /// Reads the VIN (mode 09 PID 02). Returns null when unsupported.
   /// The VIN is never written to the diagnostic log.
   Future<String?> readVin() async {
     _requireReady();
-    final reply = await channel.send('0902',
-        timeout: const Duration(seconds: 6), retries: 1);
+    final reply = await channel.send(
+      '0902',
+      timeout: const Duration(seconds: 6),
+      retries: 1,
+    );
     if (!reply.isOk) return null;
     for (final m in _parse(reply).messages) {
       if (m.data.length < 3 || m.data[0] != 0x49 || m.data[1] != 0x02) continue;
@@ -393,8 +491,10 @@ class Elm327Session {
   Future<double?> readAdapterVoltage() async {
     final r = await channel.send('ATRV');
     if (!r.isOk || r.lines.isEmpty) return null;
-    final m = RegExp(r'(\d{1,2}(?:\.\d{1,2})?)\s*V', caseSensitive: false)
-        .firstMatch(r.lines.first);
+    final m = RegExp(
+      r'(\d{1,2}(?:\.\d{1,2})?)\s*V',
+      caseSensitive: false,
+    ).firstMatch(r.lines.first);
     return m == null ? null : double.tryParse(m.group(1)!);
   }
 
@@ -406,21 +506,25 @@ class Elm327Session {
       log.warn(LogCategory.parser, p);
     }
     if (reply.corruptLines.isNotEmpty) {
-      log.warn(LogCategory.parser,
-          'Adapter flagged ${reply.corruptLines.length} corrupt frame(s)');
+      log.warn(
+        LogCategory.parser,
+        'Adapter flagged ${reply.corruptLines.length} corrupt frame(s)',
+      );
     }
     return parsed;
   }
 
   static int _ecuRank(ObdMessage m) => switch (m.ecu) {
-        0x7E8 || 0x10 => 0,
-        _ => 1,
-      };
+    0x7E8 || 0x10 => 0,
+    _ => 1,
+  };
 
   void _requireReady() {
     if (!_initialised) {
       throw const ObdException(
-          ObdFailure.notReady, 'Diagnostic session is not initialised.');
+        ObdFailure.notReady,
+        'Diagnostic session is not initialised.',
+      );
     }
   }
 

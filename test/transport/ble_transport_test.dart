@@ -32,7 +32,10 @@ class FakeBleGateway implements BleGateway {
   bool connected = false;
 
   @override
-  Future<void> connect(String deviceId, {Duration timeout = Duration.zero}) async {
+  Future<void> connect(
+    String deviceId, {
+    Duration timeout = Duration.zero,
+  }) async {
     connected = true;
     _conn.add(true);
   }
@@ -47,23 +50,32 @@ class FakeBleGateway implements BleGateway {
   Stream<bool> connectionChanges(String deviceId) => _conn.stream;
 
   @override
-  Future<List<GattServiceInfo>> discoverServices(String deviceId) async => services;
+  Future<List<GattServiceInfo>> discoverServices(String deviceId) async =>
+      services;
 
   @override
-  Future<void> subscribe(String deviceId, String service, String characteristic,
-      {bool indicate = false}) async {
+  Future<void> subscribe(
+    String deviceId,
+    String service,
+    String characteristic, {
+    bool indicate = false,
+  }) async {
     subscriptions.add(characteristic);
     _notifyChar = characteristic;
   }
 
   @override
-  Stream<Uint8List> values(String deviceId, String characteristic) => _values.stream
-      .where((e) => e.$1 == characteristic)
-      .map((e) => e.$2);
+  Stream<Uint8List> values(String deviceId, String characteristic) =>
+      _values.stream.where((e) => e.$1 == characteristic).map((e) => e.$2);
 
   @override
-  Future<void> write(String deviceId, String service, String characteristic,
-      Uint8List value, {bool withoutResponse = false}) async {
+  Future<void> write(
+    String deviceId,
+    String service,
+    String characteristic,
+    Uint8List value, {
+    bool withoutResponse = false,
+  }) async {
     writes.add((service, characteristic, latin1.decode(value)));
     final e = elm;
     if (e == null) return;
@@ -76,7 +88,10 @@ class FakeBleGateway implements BleGateway {
       _line.clear();
       scheduleMicrotask(() {
         for (var i = 0; i < out.length; i += 20) {
-          _values.add((_notifyChar!, Uint8List.fromList(out.sublist(i, (i + 20).clamp(0, out.length)))));
+          _values.add((
+            _notifyChar!,
+            Uint8List.fromList(out.sublist(i, (i + 20).clamp(0, out.length))),
+          ));
         }
       });
     }
@@ -97,7 +112,8 @@ class FakeBleGateway implements BleGateway {
   Future<void> stopScan() async {}
 }
 
-GattServiceInfo svc(String uuid, Map<String, List<String>> chars) => GattServiceInfo(
+GattServiceInfo svc(String uuid, Map<String, List<String>> chars) =>
+    GattServiceInfo(
       uuid: bleUuid(uuid),
       characteristics: [
         for (final e in chars.entries)
@@ -106,27 +122,42 @@ GattServiceInfo svc(String uuid, Map<String, List<String>> chars) => GattService
     );
 
 void main() {
-  final genericAccess = svc('1800', {'2A00': ['read']});
+  final genericAccess = svc('1800', {
+    '2A00': ['read'],
+  });
 
   test('documented FFF0 profile: full session over BLE chunks', () async {
     final gw = FakeBleGateway(
       services: [
         genericAccess,
-        svc('FFF0', {'FFF1': ['read', 'notify'], 'FFF2': ['write', 'writeWithoutResponse']}),
+        svc('FFF0', {
+          'FFF1': ['read', 'notify'],
+          'FFF2': ['write', 'writeWithoutResponse'],
+        }),
       ],
       elm: SimulatedElm327(
-        vehicle: SimulatedVehicle.forScenario(SimulationScenario.healthyDriving,
-            clock: () => DateTime(2026)),
+        vehicle: SimulatedVehicle.forScenario(
+          SimulationScenario.healthyDriving,
+          clock: () => DateTime(2026),
+        ),
       ),
     );
     final log = DiagnosticLog();
-    final t = BleElmTransport(gateway: gw, deviceId: 'AA:BB:CC:DD:EE:FF', deviceName: 'OBDII', log: log);
+    final t = BleElmTransport(
+      gateway: gw,
+      deviceId: 'AA:BB:CC:DD:EE:FF',
+      deviceName: 'OBDII',
+      log: log,
+    );
     await t.open();
     expect(t.carriesElmSerial, isTrue);
     expect(t.details.profileName, contains('FFF0'));
     expect(gw.subscriptions, [bleUuid('FFF1')]);
 
-    final s = Elm327Session(channel: ElmChannel(transport: t, log: log), log: log);
+    final s = Elm327Session(
+      channel: ElmChannel(transport: t, log: log),
+      log: log,
+    );
     await s.identify();
     await s.initialise();
     await s.discoverSupportedPids();
@@ -135,12 +166,17 @@ void main() {
     // Every write went to the documented write characteristic.
     expect(gw.writes.every((w) => w.$2 == bleUuid('FFF2')), isTrue);
     // Device MAC is masked in logs.
-    expect(log.entries.any((e) => e.message.contains('AA:BB:CC:DD:EE:FF')), isFalse);
+    expect(
+      log.entries.any((e) => e.message.contains('AA:BB:CC:DD:EE:FF')),
+      isFalse,
+    );
   });
 
   test('FFE0 single-characteristic profile is matched', () {
     final m = BleProfiles.match([
-      svc('FFE0', {'FFE1': ['read', 'write', 'notify']}),
+      svc('FFE0', {
+        'FFE1': ['read', 'write', 'notify'],
+      }),
     ]);
     expect(m.matched, isTrue);
     expect(m.profile!.id, 'ffe0');
@@ -148,38 +184,66 @@ void main() {
 
   test('profile service present but wrong properties → no match', () {
     final m = BleProfiles.match([
-      svc('FFF0', {'FFF1': ['read'], 'FFF2': ['read']}),
+      svc('FFF0', {
+        'FFF1': ['read'],
+        'FFF2': ['read'],
+      }),
     ]);
     expect(m.matched, isFalse);
   });
 
   test('unknown GATT layout: inspected read-only, never written', () async {
-    final gw = FakeBleGateway(services: [
-      genericAccess,
-      svc('6E400001-B5A3-F393-E0A9-E50E24DCCA9E', {
-        '6E400002-B5A3-F393-E0A9-E50E24DCCA9E': ['write'],
-        '6E400003-B5A3-F393-E0A9-E50E24DCCA9E': ['notify'],
-      }),
-    ]);
-    final t = BleElmTransport(gateway: gw, deviceId: 'dev', deviceName: 'Mystery', log: DiagnosticLog());
+    final gw = FakeBleGateway(
+      services: [
+        genericAccess,
+        svc('6E400001-B5A3-F393-E0A9-E50E24DCCA9E', {
+          '6E400002-B5A3-F393-E0A9-E50E24DCCA9E': ['write'],
+          '6E400003-B5A3-F393-E0A9-E50E24DCCA9E': ['notify'],
+        }),
+      ],
+    );
+    final t = BleElmTransport(
+      gateway: gw,
+      deviceId: 'dev',
+      deviceName: 'Mystery',
+      log: DiagnosticLog(),
+    );
     await expectLater(
       t.open(),
-      throwsA(isA<TransportException>()
-          .having((e) => e.failure, 'failure', TransportFailure.unsupportedProfile)),
+      throwsA(
+        isA<TransportException>().having(
+          (e) => e.failure,
+          'failure',
+          TransportFailure.unsupportedProfile,
+        ),
+      ),
     );
     expect(gw.writes, isEmpty);
     expect(gw.subscriptions, isEmpty);
     expect(gw.connected, isFalse);
     expect(t.details.gattServices, hasLength(2)); // kept for the dev screen
-    await expectLater(t.write(Uint8List.fromList([0x41])), throwsA(isA<TransportException>()));
+    await expectLater(
+      t.write(Uint8List.fromList([0x41])),
+      throwsA(isA<TransportException>()),
+    );
     expect(gw.writes, isEmpty);
   });
 
   test('inspectOnly never writes', () async {
-    final gw = FakeBleGateway(services: [
-      svc('FFF0', {'FFF1': ['notify'], 'FFF2': ['write']}),
-    ]);
-    final t = BleElmTransport(gateway: gw, deviceId: 'dev', deviceName: 'X', log: DiagnosticLog());
+    final gw = FakeBleGateway(
+      services: [
+        svc('FFF0', {
+          'FFF1': ['notify'],
+          'FFF2': ['write'],
+        }),
+      ],
+    );
+    final t = BleElmTransport(
+      gateway: gw,
+      deviceId: 'dev',
+      deviceName: 'X',
+      log: DiagnosticLog(),
+    );
     final services = await t.inspectOnly();
     expect(services, hasLength(1));
     expect(gw.writes, isEmpty);
@@ -189,8 +253,15 @@ void main() {
   test('IQ adapter is unverified and refuses to be used', () {
     expect(IqAdapterSpec.verified, isFalse);
     expect(
-      IqAdapterSpec.isIq(const BleScanHit(
-          deviceId: 'x', name: 'IQ-1234', rssi: -50, serviceUuids: [], manufacturerIds: [])),
+      IqAdapterSpec.isIq(
+        const BleScanHit(
+          deviceId: 'x',
+          name: 'IQ-1234',
+          rssi: -50,
+          serviceUuids: [],
+          manufacturerIds: [],
+        ),
+      ),
       isFalse,
     );
     expect(IqAdapterSpec.requireVerified, throwsA(isA<TransportException>()));

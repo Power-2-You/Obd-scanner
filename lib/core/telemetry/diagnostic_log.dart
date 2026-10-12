@@ -50,7 +50,7 @@ class LogEntry {
 /// Nothing is uploaded anywhere; export is always an explicit user action.
 class DiagnosticLog extends ChangeNotifier {
   DiagnosticLog({this.capacity = 3000, DateTime Function()? clock})
-      : _clock = clock ?? DateTime.now;
+    : _clock = clock ?? DateTime.now;
 
   final int capacity;
   final DateTime Function() _clock;

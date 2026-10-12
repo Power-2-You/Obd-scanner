@@ -19,21 +19,21 @@ class ElmFixtures {
 
   /// Mode 03 with 4 DTCs (P0301 P0420 P0171 U0100) – ISO-TP multi-frame.
   /// Payload: 43 04 03 01 04 20 01 71 C1 00  (10 bytes)
-  static const dtcsMultiFrame =
-      '7E8100A430403010420\r7E8210171C100000000\r\r';
+  static const dtcsMultiFrame = '7E8100A430403010420\r7E8210171C100000000\r\r';
 
   /// Mode 03, no codes.
   static const dtcsNone = '7E80243000000000000\r\r';
 
   /// VIN (mode 09 PID 02) – synthetic VIN MGHDEM00000000001.
-  static const vinMultiFrame = '7E81014490201'
+  static const vinMultiFrame =
+      '7E81014490201'
       '4D4748\r7E82144454D30303030\r7E82230303030303031\r\r';
 
   /// 29-bit CAN, engine at source address 10.
   static const rpm29Bit = '18DAF11004410C1AF8000000\r\r';
 
   // ------------------------------------------------------- Legacy, H1 S0
-  /// ISO 9141-2: 48 6B 10 41 0C 1A F8 <checksum>
+  /// ISO 9141-2: `48 6B 10 41 0C 1A F8 <checksum>`
   static String get legacyRpm {
     final bytes = [0x48, 0x6B, 0x10, 0x41, 0x0C, 0x1A, 0xF8];
     final cs = bytes.fold<int>(0, (a, b) => a + b) & 0xFF;
@@ -67,6 +67,7 @@ class ElmFixtures {
   /// Garbage that is not hex.
   static const malformedLine = '7E8ZZ410C\r\r';
 
-  static String _hex(List<int> bytes) =>
-      bytes.map((b) => b.toRadixString(16).padLeft(2, '0').toUpperCase()).join();
+  static String _hex(List<int> bytes) => bytes
+      .map((b) => b.toRadixString(16).padLeft(2, '0').toUpperCase())
+      .join();
 }

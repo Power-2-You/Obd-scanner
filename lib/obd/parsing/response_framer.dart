@@ -24,8 +24,10 @@ class ResponseFramer {
   /// each prompt, prompt excluded).
   List<String> add(List<int> bytes) {
     // ELM327 output is ASCII. Some clones emit NUL padding bytes.
-    final chunk = latin1
-        .decode(bytes.where((b) => b != 0).toList(), allowInvalid: true);
+    final chunk = latin1.decode(
+      bytes.where((b) => b != 0).toList(),
+      allowInvalid: true,
+    );
     _buffer.write(chunk);
 
     final completed = <String>[];

@@ -61,7 +61,8 @@ class DtcGuidance {
     return n >= a && n <= b;
   }
 
-  static DtcGuidance forCode(DiagnosticTroubleCode dtc) => forCodeString(dtc.code);
+  static DtcGuidance forCode(DiagnosticTroubleCode dtc) =>
+      forCodeString(dtc.code);
 
   static DtcGuidance forCodeString(String code) {
     bool r(String a, String b) => _inRange(code, a, b);
@@ -71,7 +72,8 @@ class DtcGuidance {
         level: GuidanceLevel.stopAndInspect,
         family: 'Engine oil pressure',
         commonAreas: ['Engine oil level', 'Oil pressure sender', 'Oil pump'],
-        safetyNote: 'Low oil pressure can damage an engine within minutes. '
+        safetyNote:
+            'Low oil pressure can damage an engine within minutes. '
             'Stop safely, switch off and check the oil level before driving on.',
         quickCheck: 'With the engine off on level ground, check the dipstick.',
       );
@@ -80,8 +82,14 @@ class DtcGuidance {
       return const DtcGuidance(
         level: GuidanceLevel.stopAndInspect,
         family: 'Engine overheating',
-        commonAreas: ['Coolant level', 'Cooling fan', 'Thermostat', 'Water pump'],
-        safetyNote: 'An overheating engine can be severely damaged. Stop safely '
+        commonAreas: [
+          'Coolant level',
+          'Cooling fan',
+          'Thermostat',
+          'Water pump',
+        ],
+        safetyNote:
+            'An overheating engine can be severely damaged. Stop safely '
             'and let it cool. Never open a hot radiator cap.',
       );
     }
@@ -89,7 +97,10 @@ class DtcGuidance {
       return const DtcGuidance(
         level: GuidanceLevel.stopAndInspect,
         family: 'Transmission overheating',
-        commonAreas: ['Transmission fluid level/condition', 'Transmission cooler'],
+        commonAreas: [
+          'Transmission fluid level/condition',
+          'Transmission cooler',
+        ],
         safetyNote:
             'Stop safely and let the transmission cool before continuing.',
       );
@@ -105,7 +116,8 @@ class DtcGuidance {
           'Vacuum leaks',
           'Engine compression',
         ],
-        safetyNote: 'If the check-engine light is flashing, reduce load and '
+        safetyNote:
+            'If the check-engine light is flashing, reduce load and '
             'only drive as far as needed: a severe misfire can overheat and '
             'damage the catalytic converter.',
       );
@@ -139,16 +151,29 @@ class DtcGuidance {
       return const DtcGuidance(
         level: GuidanceLevel.inspectPromptly,
         family: 'Throttle / pedal position',
-        commonAreas: ['Throttle body', 'Pedal position sensor', 'Wiring and connectors'],
-        safetyNote: 'Throttle faults can put the vehicle into reduced-power '
+        commonAreas: [
+          'Throttle body',
+          'Pedal position sensor',
+          'Wiring and connectors',
+        ],
+        safetyNote:
+            'Throttle faults can put the vehicle into reduced-power '
             '("limp") mode. Take care when merging or overtaking.',
       );
     }
-    if (code == 'P0087' || code == 'P0088' || r('P0190', 'P0193') || code == 'P0230') {
+    if (code == 'P0087' ||
+        code == 'P0088' ||
+        r('P0190', 'P0193') ||
+        code == 'P0230') {
       return const DtcGuidance(
         level: GuidanceLevel.inspectPromptly,
         family: 'Fuel pressure / delivery',
-        commonAreas: ['Fuel pump', 'Fuel filter', 'Pressure sensor', 'Pressure regulator'],
+        commonAreas: [
+          'Fuel pump',
+          'Fuel filter',
+          'Pressure sensor',
+          'Pressure regulator',
+        ],
         safetyNote: 'Fuel delivery problems can cause hesitation or stalling.',
       );
     }
@@ -163,7 +188,8 @@ class DtcGuidance {
           'Injectors',
           'Exhaust leaks before the oxygen sensor',
         ],
-        safetyNote: 'Usually drivable, but a persistent mixture fault can '
+        safetyNote:
+            'Usually drivable, but a persistent mixture fault can '
             'lead to misfires and catalytic converter damage.',
       );
     }
@@ -177,7 +203,8 @@ class DtcGuidance {
           'Exhaust leaks',
           'Catalytic converter',
         ],
-        safetyNote: 'Not usually a safety issue, but check for other codes '
+        safetyNote:
+            'Not usually a safety issue, but check for other codes '
             'first – they are a common cause.',
       );
     }
@@ -192,19 +219,29 @@ class DtcGuidance {
           'Purge / vent valves',
           'Charcoal canister',
         ],
-        safetyNote: 'Not usually a drivability issue. If you smell fuel, have '
+        safetyNote:
+            'Not usually a drivability issue. If you smell fuel, have '
             'it inspected promptly.',
         quickCheck: capCodes.contains(code)
             ? 'Check the fuel cap is present, undamaged and clicks tight.'
             : null,
       );
     }
-    if (r('P0130', 'P0167') || code == 'P0030' || code == 'P0036' ||
-        r('P2195', 'P2271') || code == 'P2096' || code == 'P2097') {
+    if (r('P0130', 'P0167') ||
+        code == 'P0030' ||
+        code == 'P0036' ||
+        r('P2195', 'P2271') ||
+        code == 'P2096' ||
+        code == 'P2097') {
       return const DtcGuidance(
         level: GuidanceLevel.checkSoon,
         family: 'Oxygen (O2) sensor',
-        commonAreas: ['O2 sensor', 'Sensor heater circuit', 'Wiring', 'Exhaust leaks'],
+        commonAreas: [
+          'O2 sensor',
+          'Sensor heater circuit',
+          'Wiring',
+          'Exhaust leaks',
+        ],
         safetyNote: 'Usually drivable; fuel economy and emissions may suffer.',
       );
     }
@@ -212,7 +249,11 @@ class DtcGuidance {
       return const DtcGuidance(
         level: GuidanceLevel.checkSoon,
         family: 'Air flow / manifold pressure / intake temperature',
-        commonAreas: ['Sensor connector', 'Air filter and intake ducting', 'Sensor itself'],
+        commonAreas: [
+          'Sensor connector',
+          'Air filter and intake ducting',
+          'Sensor itself',
+        ],
         safetyNote: 'May cause hesitation, poor economy or rough idle.',
       );
     }
@@ -220,8 +261,13 @@ class DtcGuidance {
       return const DtcGuidance(
         level: GuidanceLevel.checkSoon,
         family: 'Coolant temperature / thermostat',
-        commonAreas: ['Coolant level', 'Thermostat', 'Coolant temperature sensor'],
-        safetyNote: 'Watch the temperature gauge. Stop if it rises towards hot.',
+        commonAreas: [
+          'Coolant level',
+          'Thermostat',
+          'Coolant temperature sensor',
+        ],
+        safetyNote:
+            'Watch the temperature gauge. Stop if it rises towards hot.',
       );
     }
     if (r('P0520', 'P0523')) {
@@ -237,8 +283,13 @@ class DtcGuidance {
       return const DtcGuidance(
         level: GuidanceLevel.inspectPromptly,
         family: 'System voltage',
-        commonAreas: ['Battery condition', 'Alternator / charging system', 'Battery terminals'],
-        safetyNote: 'A charging fault can leave you stranded. The IQ jump '
+        commonAreas: [
+          'Battery condition',
+          'Alternator / charging system',
+          'Battery terminals',
+        ],
+        safetyNote:
+            'A charging fault can leave you stranded. The IQ jump '
             'starter can help you start, but the cause still needs fixing.',
       );
     }
@@ -246,8 +297,13 @@ class DtcGuidance {
       return const DtcGuidance(
         level: GuidanceLevel.inspectPromptly,
         family: 'Control module / output circuits',
-        commonAreas: ['Module power and ground supply', 'Wiring', 'Control module'],
-        safetyNote: 'Have a workshop check this – module faults can affect '
+        commonAreas: [
+          'Module power and ground supply',
+          'Wiring',
+          'Control module',
+        ],
+        safetyNote:
+            'Have a workshop check this – module faults can affect '
             'several systems.',
       );
     }
@@ -255,8 +311,13 @@ class DtcGuidance {
       return const DtcGuidance(
         level: GuidanceLevel.inspectPromptly,
         family: 'Transmission',
-        commonAreas: ['Transmission fluid level/condition', 'Sensors and solenoids', 'Wiring'],
-        safetyNote: 'Transmission faults can cause harsh shifts or a '
+        commonAreas: [
+          'Transmission fluid level/condition',
+          'Sensors and solenoids',
+          'Wiring',
+        ],
+        safetyNote:
+            'Transmission faults can cause harsh shifts or a '
             'reduced-function mode.',
       );
     }
@@ -264,8 +325,13 @@ class DtcGuidance {
       return const DtcGuidance(
         level: GuidanceLevel.inspectPromptly,
         family: 'Module communication',
-        commonAreas: ['Battery voltage', 'Wiring / connectors', 'Affected module'],
-        safetyNote: 'Communication faults can disable systems such as ABS or '
+        commonAreas: [
+          'Battery voltage',
+          'Wiring / connectors',
+          'Affected module',
+        ],
+        safetyNote:
+            'Communication faults can disable systems such as ABS or '
             'instrument warnings.',
       );
     }
@@ -274,7 +340,8 @@ class DtcGuidance {
         level: GuidanceLevel.inspectPromptly,
         family: 'Chassis (brakes, steering, suspension)',
         commonAreas: ['Wheel speed sensors', 'Brake system', 'Steering system'],
-        safetyNote: 'If a brake, ABS or stability warning light is on, have '
+        safetyNote:
+            'If a brake, ABS or stability warning light is on, have '
             'the system checked before relying on it.',
       );
     }
@@ -283,7 +350,8 @@ class DtcGuidance {
         level: GuidanceLevel.checkSoon,
         family: 'Body systems',
         commonAreas: ['Affected body system', 'Wiring and connectors'],
-        safetyNote: 'Body codes include airbag (SRS) faults. If the airbag '
+        safetyNote:
+            'Body codes include airbag (SRS) faults. If the airbag '
             'warning light is on, airbags may not deploy – inspect promptly.',
       );
     }
@@ -291,7 +359,8 @@ class DtcGuidance {
       level: GuidanceLevel.checkSoon,
       family: 'Powertrain',
       commonAreas: ['System indicated by the code'],
-      safetyNote: 'Watch for warning lights or changes in how the vehicle '
+      safetyNote:
+          'Watch for warning lights or changes in how the vehicle '
           'drives, and have the code diagnosed.',
     );
   }

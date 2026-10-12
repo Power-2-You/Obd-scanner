@@ -72,7 +72,9 @@ class FrameParser {
   const FrameParser._();
 
   static final RegExp _hexOnly = RegExp(r'^[0-9A-F]+$');
-  static final RegExp _headerlessMultiLine = RegExp(r'^([0-9A-F]):([0-9A-F]*)$');
+  static final RegExp _headerlessMultiLine = RegExp(
+    r'^([0-9A-F]):([0-9A-F]*)$',
+  );
 
   static FrameParseResult parse(List<String> lines, ObdProtocol protocol) {
     final problems = <String>[];
@@ -101,8 +103,9 @@ class FrameParser {
     }
 
     if (protocol.isCan || protocol == ObdProtocol.unknown) {
-      final effective =
-          protocol == ObdProtocol.unknown ? _guessProtocol(hexLines) : protocol;
+      final effective = protocol == ObdProtocol.unknown
+          ? _guessProtocol(hexLines)
+          : protocol;
       if (effective.isCan) {
         return _parseCan(hexLines, effective, problems);
       }
@@ -216,14 +219,16 @@ class FrameParser {
           '${multi!.length}/$expectedLength bytes',
         );
       }
-      out.add(ObdMessage(
-        ecu: firstFrame!.ecu,
-        header: firstFrame!.header,
-        data: List.unmodifiable(
-          partial ? multi! : multi!.sublist(0, expectedLength),
+      out.add(
+        ObdMessage(
+          ecu: firstFrame!.ecu,
+          header: firstFrame!.header,
+          data: List.unmodifiable(
+            partial ? multi! : multi!.sublist(0, expectedLength),
+          ),
+          partial: partial,
         ),
-        partial: partial,
-      ));
+      );
       multi = null;
       firstFrame = null;
     }
@@ -246,14 +251,16 @@ class FrameParser {
               'Partial single frame from ${f.header}: $available/$len bytes',
             );
           }
-          out.add(ObdMessage(
-            ecu: f.ecu,
-            header: f.header,
-            data: List.unmodifiable(
-              f.bytes.sublist(1, 1 + (partial ? available : len)),
+          out.add(
+            ObdMessage(
+              ecu: f.ecu,
+              header: f.header,
+              data: List.unmodifiable(
+                f.bytes.sublist(1, 1 + (partial ? available : len)),
+              ),
+              partial: partial,
             ),
-            partial: partial,
-          ));
+          );
         case 1: // First frame
           finishMulti();
           if (f.bytes.length < 2) {
@@ -336,8 +343,11 @@ class FrameParser {
       } else if (service == 0x49 && group.length > 1) {
         // Mode 09 multi-frame: 49 PID SEQ d d d d – order by SEQ.
         final sorted = [...group]
-          ..sort((a, b) => (a.bytes.length > 2 ? a.bytes[2] : 0)
-              .compareTo(b.bytes.length > 2 ? b.bytes[2] : 0));
+          ..sort(
+            (a, b) => (a.bytes.length > 2 ? a.bytes[2] : 0).compareTo(
+              b.bytes.length > 2 ? b.bytes[2] : 0,
+            ),
+          );
         final data = <int>[0x49, sorted.first.bytes[1]];
         for (final f in sorted) {
           if (f.bytes.length > 3) data.addAll(f.bytes.sublist(3));
@@ -345,11 +355,13 @@ class FrameParser {
         messages.add(ObdMessage(ecu: ecu, header: header, data: data));
       } else {
         for (final f in group) {
-          messages.add(ObdMessage(
-            ecu: f.ecu,
-            header: f.header,
-            data: List.unmodifiable(f.bytes),
-          ));
+          messages.add(
+            ObdMessage(
+              ecu: f.ecu,
+              header: f.header,
+              data: List.unmodifiable(f.bytes),
+            ),
+          );
         }
       }
     }
@@ -380,8 +392,9 @@ class FrameParser {
       data.addAll(bytes);
     }
     final partial = expected > 0 && data.length < expected;
-    final trimmed =
-        expected > 0 && data.length > expected ? data.sublist(0, expected) : data;
+    final trimmed = expected > 0 && data.length > expected
+        ? data.sublist(0, expected)
+        : data;
     return FrameParseResult(
       messages: [
         ObdMessage(ecu: -1, header: '', data: trimmed, partial: partial),

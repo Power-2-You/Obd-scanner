@@ -14,7 +14,7 @@ import 'package:my_garage_hero_iq/transport/obd_transport.dart';
 import 'package:my_garage_hero_iq/transport/simulated/simulated_transport.dart';
 import 'package:my_garage_hero_iq/transport/simulated/simulated_vehicle.dart';
 
-final fixedClock = () => DateTime(2026, 1, 1, 9);
+DateTime fixedClock() => DateTime(2026, 1, 1, 9);
 
 Future<(Elm327Session, SimulatedTransport, DiagnosticLog)> openSession(
   SimulationScenario s,
@@ -27,7 +27,10 @@ Future<(Elm327Session, SimulatedTransport, DiagnosticLog)> openSession(
     clock: fixedClock,
   );
   await t.open();
-  final session = Elm327Session(channel: ElmChannel(transport: t, log: log), log: log);
+  final session = Elm327Session(
+    channel: ElmChannel(transport: t, log: log),
+    log: log,
+  );
   return (session, t, log);
 }
 
@@ -43,7 +46,10 @@ class ScriptedTransport extends BaseTransport {
   TransportKind get kind => TransportKind.bleElm327;
   @override
   TransportDetails get details => const TransportDetails(
-      kind: TransportKind.bleElm327, deviceId: 'x', deviceName: 'scripted');
+    kind: TransportKind.bleElm327,
+    deviceId: 'x',
+    deviceName: 'scripted',
+  );
   @override
   bool get carriesElmSerial => elm && state == LinkState.connected;
   @override
@@ -58,28 +64,38 @@ class ScriptedTransport extends BaseTransport {
     final cmd = latin1.decode(data).trim();
     written.add(cmd);
     final r = replies[cmd];
-    if (r != null) scheduleMicrotask(() => emit(Uint8List.fromList(latin1.encode(r))));
+    if (r != null) {
+      scheduleMicrotask(() => emit(Uint8List.fromList(latin1.encode(r))));
+    }
   }
 }
 
 void main() {
   group('Simulated scanner end to end (real channel, framer, parser)', () {
-    test('milestone sequence: identify → init → supported PIDs → RPM', () async {
-      final (s, _, log) = await openSession(SimulationScenario.healthyDriving);
-      final id = await s.identify();
-      expect(id.family, 'ELM327');
-      expect(id.version, '1.5');
-      await s.initialise();
-      final supported = await s.discoverSupportedPids();
-      expect(s.protocol, ObdProtocol.can11x500);
-      expect(supported.supports(Pids.rpm), isTrue);
-      expect(supported.supports(Pids.moduleVoltage), isTrue);
-      final rpm = await s.readPid(Pids.rpm);
-      expect(rpm.status, ReadingStatus.live);
-      expect(rpm.value, 820); // deterministic with fixed clock
-      expect(rpm.ecu, contains('7E8'));
-      expect(log.entries.where((e) => e.category == LogCategory.tx), isNotEmpty);
-    });
+    test(
+      'milestone sequence: identify → init → supported PIDs → RPM',
+      () async {
+        final (s, _, log) = await openSession(
+          SimulationScenario.healthyDriving,
+        );
+        final id = await s.identify();
+        expect(id.family, 'ELM327');
+        expect(id.version, '1.5');
+        await s.initialise();
+        final supported = await s.discoverSupportedPids();
+        expect(s.protocol, ObdProtocol.can11x500);
+        expect(supported.supports(Pids.rpm), isTrue);
+        expect(supported.supports(Pids.moduleVoltage), isTrue);
+        final rpm = await s.readPid(Pids.rpm);
+        expect(rpm.status, ReadingStatus.live);
+        expect(rpm.value, 820); // deterministic with fixed clock
+        expect(rpm.ecu, contains('7E8'));
+        expect(
+          log.entries.where((e) => e.category == LogCategory.tx),
+          isNotEmpty,
+        );
+      },
+    );
 
     test('dashboard PIDs decode within physical ranges', () async {
       final (s, _, _) = await openSession(SimulationScenario.healthyDriving);
@@ -155,8 +171,13 @@ void main() {
       await s.initialise();
       await expectLater(
         s.discoverSupportedPids(),
-        throwsA(isA<ObdException>()
-            .having((e) => e.failure, 'failure', ObdFailure.unableToConnect)),
+        throwsA(
+          isA<ObdException>().having(
+            (e) => e.failure,
+            'failure',
+            ObdFailure.unableToConnect,
+          ),
+        ),
       );
     });
 
@@ -171,11 +192,19 @@ void main() {
       final t = ScriptedTransport({'ATZ': 'HELLO FROM PUMP\r\r>'});
       await t.open();
       final log = DiagnosticLog();
-      final s = Elm327Session(channel: ElmChannel(transport: t, log: log), log: log);
+      final s = Elm327Session(
+        channel: ElmChannel(transport: t, log: log),
+        log: log,
+      );
       await expectLater(
         s.identify(),
-        throwsA(isA<ObdException>()
-            .having((e) => e.failure, 'failure', ObdFailure.notElmCompatible)),
+        throwsA(
+          isA<ObdException>().having(
+            (e) => e.failure,
+            'failure',
+            ObdFailure.notElmCompatible,
+          ),
+        ),
       );
       expect(() => s.initialise(), throwsA(isA<ObdException>()));
       expect(t.written, ['ATZ']);
@@ -196,34 +225,51 @@ void main() {
       final ch = ElmChannel(transport: t, log: DiagnosticLog());
       await expectLater(
         ch.send('04'),
-        throwsA(isA<ObdException>()
-            .having((e) => e.failure, 'failure', ObdFailure.commandBlocked)),
+        throwsA(
+          isA<ObdException>().having(
+            (e) => e.failure,
+            'failure',
+            ObdFailure.commandBlocked,
+          ),
+        ),
       );
       expect(t.written, isEmpty);
     });
   });
 
   group('Timeouts and resynchronisation', () {
-    test('timeout is retried, then the late reply is not misattributed', () async {
-      final t = ScriptedTransport({'ATRV': null, 'ATI': 'ELM327 v1.5\r\r>'});
-      await t.open();
-      final ch = ElmChannel(
-        transport: t,
-        log: DiagnosticLog(),
-        resyncWindow: const Duration(milliseconds: 50),
-      );
-      await expectLater(
-        ch.send('ATRV', timeout: const Duration(milliseconds: 30), retries: 1),
-        throwsA(isA<ObdException>()
-            .having((e) => e.failure, 'failure', ObdFailure.timeout)),
-      );
-      expect(t.written, ['ATRV', 'ATRV']);
-      expect(ch.timeouts, 2);
-      // A stale prompt arrives late; the next command must not consume it.
-      t.inject('12.4V\r\r>');
-      final r = await ch.send('ATI');
-      expect(r.lines, ['ELM327 v1.5']);
-    });
+    test(
+      'timeout is retried, then the late reply is not misattributed',
+      () async {
+        final t = ScriptedTransport({'ATRV': null, 'ATI': 'ELM327 v1.5\r\r>'});
+        await t.open();
+        final ch = ElmChannel(
+          transport: t,
+          log: DiagnosticLog(),
+          resyncWindow: const Duration(milliseconds: 50),
+        );
+        await expectLater(
+          ch.send(
+            'ATRV',
+            timeout: const Duration(milliseconds: 30),
+            retries: 1,
+          ),
+          throwsA(
+            isA<ObdException>().having(
+              (e) => e.failure,
+              'failure',
+              ObdFailure.timeout,
+            ),
+          ),
+        );
+        expect(t.written, ['ATRV', 'ATRV']);
+        expect(ch.timeouts, 2);
+        // A stale prompt arrives late; the next command must not consume it.
+        t.inject('12.4V\r\r>');
+        final r = await ch.send('ATI');
+        expect(r.lines, ['ELM327 v1.5']);
+      },
+    );
 
     test('disconnect fails the pending command', () async {
       final t = ScriptedTransport({'0100': null});

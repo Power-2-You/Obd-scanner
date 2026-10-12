@@ -59,11 +59,11 @@ class DiagnosticTroubleCode {
       : null;
 
   Map<String, Object> toJson() => {
-        'code': code,
-        'status': status.name,
-        'ecu': ecu,
-        'ecuLabel': ecuLabel,
-      };
+    'code': code,
+    'status': status.name,
+    'ecu': ecu,
+    'ecuLabel': ecuLabel,
+  };
 
   factory DiagnosticTroubleCode.fromJson(Map<String, dynamic> j) =>
       DiagnosticTroubleCode(
@@ -113,11 +113,11 @@ class DtcCodec {
   static final RegExp valid = RegExp(r'^[PCBU][0-3][0-9A-F]{3}$');
 
   static DtcSystem systemOf(String code) => switch (code[0]) {
-        'P' => DtcSystem.powertrain,
-        'C' => DtcSystem.chassis,
-        'B' => DtcSystem.body,
-        _ => DtcSystem.network,
-      };
+    'P' => DtcSystem.powertrain,
+    'C' => DtcSystem.chassis,
+    'B' => DtcSystem.body,
+    _ => DtcSystem.network,
+  };
 
   static DtcDefinitionType definitionTypeOf(String code) {
     final d1 = code[1];

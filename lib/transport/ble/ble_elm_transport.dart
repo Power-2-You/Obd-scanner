@@ -26,10 +26,10 @@ class BleElmTransport extends BaseTransport {
     required this.log,
     this.mtuPayload = 20,
   }) : _details = TransportDetails(
-          kind: TransportKind.bleElm327,
-          deviceId: deviceId,
-          deviceName: deviceName,
-        );
+         kind: TransportKind.bleElm327,
+         deviceId: deviceId,
+         deviceName: deviceName,
+       );
 
   final BleGateway gateway;
   final String deviceId;
@@ -57,14 +57,19 @@ class BleElmTransport extends BaseTransport {
   @override
   Future<void> open({Duration timeout = const Duration(seconds: 15)}) async {
     setState(LinkState.connecting);
-    log.info(LogCategory.transport,
-        'BLE connect → $deviceName [${Redactor.deviceId(deviceId)}]');
+    log.info(
+      LogCategory.transport,
+      'BLE connect → $deviceName [${Redactor.deviceId(deviceId)}]',
+    );
     try {
       await gateway.connect(deviceId, timeout: timeout);
     } catch (e) {
       setState(LinkState.disconnected);
-      throw TransportException(TransportFailure.connectFailed,
-          'Could not connect to $deviceName.', detail: '$e');
+      throw TransportException(
+        TransportFailure.connectFailed,
+        'Could not connect to $deviceName.',
+        detail: '$e',
+      );
     }
     _connSub = gateway.connectionChanges(deviceId).listen((connected) {
       if (!connected && state != LinkState.disconnected) {
@@ -78,21 +83,28 @@ class BleElmTransport extends BaseTransport {
       services = await gateway.discoverServices(deviceId);
     } catch (e) {
       await _abort();
-      throw TransportException(TransportFailure.connectFailed,
-          'Connected, but could not read the device\'s services.', detail: '$e');
+      throw TransportException(
+        TransportFailure.connectFailed,
+        'Connected, but could not read the device\'s services.',
+        detail: '$e',
+      );
     }
     _details = _details.copyWith(gattServices: services);
     for (final s in services) {
-      log.info(LogCategory.transport,
-          'GATT service ${shortUuid(s.uuid)}: '
-          '${s.characteristics.map((c) => '${shortUuid(c.uuid)}(${c.properties.join('/')})').join(', ')}');
+      log.info(
+        LogCategory.transport,
+        'GATT service ${shortUuid(s.uuid)}: '
+        '${s.characteristics.map((c) => '${shortUuid(c.uuid)}(${c.properties.join('/')})').join(', ')}',
+      );
     }
 
     final match = BleProfiles.match(services);
     if (!match.matched) {
-      log.warn(LogCategory.transport,
-          'No documented OBD serial profile found – disconnecting without '
-          'sending any data.');
+      log.warn(
+        LogCategory.transport,
+        'No documented OBD serial profile found – disconnecting without '
+        'sending any data.',
+      );
       await _abort();
       throw const TransportException(
         TransportFailure.unsupportedProfile,
@@ -115,12 +127,19 @@ class BleElmTransport extends BaseTransport {
 
     try {
       _valueSub = gateway.values(deviceId, p.notifyUuid).listen(emit);
-      await gateway.subscribe(deviceId, p.serviceUuid, p.notifyUuid,
-          indicate: match.useIndicate);
+      await gateway.subscribe(
+        deviceId,
+        p.serviceUuid,
+        p.notifyUuid,
+        indicate: match.useIndicate,
+      );
     } catch (e) {
       await _abort();
-      throw TransportException(TransportFailure.connectFailed,
-          'Could not subscribe to scanner data.', detail: '$e');
+      throw TransportException(
+        TransportFailure.connectFailed,
+        'Could not subscribe to scanner data.',
+        detail: '$e',
+      );
     }
     setState(LinkState.connected);
   }
@@ -149,15 +168,21 @@ class BleElmTransport extends BaseTransport {
   Future<void> write(Uint8List data) async {
     final m = _match;
     if (m == null || !m.matched || state != LinkState.connected) {
-      throw const TransportException(TransportFailure.notVerified,
-          'Refusing to write: no verified serial characteristic.');
+      throw const TransportException(
+        TransportFailure.notVerified,
+        'Refusing to write: no verified serial characteristic.',
+      );
     }
     final p = m.profile!;
     for (var i = 0; i < data.length; i += mtuPayload) {
       final end = (i + mtuPayload).clamp(0, data.length);
-      await gateway.write(deviceId, p.serviceUuid, p.writeUuid,
-          Uint8List.sublistView(data, i, end),
-          withoutResponse: m.writeWithoutResponse);
+      await gateway.write(
+        deviceId,
+        p.serviceUuid,
+        p.writeUuid,
+        Uint8List.sublistView(data, i, end),
+        withoutResponse: m.writeWithoutResponse,
+      );
     }
   }
 

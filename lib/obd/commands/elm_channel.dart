@@ -107,16 +107,20 @@ class ElmChannel {
         final reply = await _sendOnce(command, timeout);
         if (reply.status.isTransient && attempt < retries) {
           attempt++;
-          log.warn(LogCategory.tx,
-              'Retrying $command after ${reply.status.name} (attempt ${attempt + 1})');
+          log.warn(
+            LogCategory.tx,
+            'Retrying $command after ${reply.status.name} (attempt ${attempt + 1})',
+          );
           continue;
         }
         return reply;
       } on ObdException catch (e) {
         if (e.failure == ObdFailure.timeout && attempt < retries) {
           attempt++;
-          log.warn(LogCategory.tx,
-              'Retrying $command after timeout (attempt ${attempt + 1})');
+          log.warn(
+            LogCategory.tx,
+            'Retrying $command after timeout (attempt ${attempt + 1})',
+          );
           continue;
         }
         rethrow;
@@ -137,8 +141,10 @@ class ElmChannel {
       );
     }
     if (!transport.carriesElmSerial) {
-      log.error(LogCategory.tx,
-          'BLOCKED: transport is not a confirmed ELM327 channel ($command)');
+      log.error(
+        LogCategory.tx,
+        'BLOCKED: transport is not a confirmed ELM327 channel ($command)',
+      );
       throw const ObdException(
         ObdFailure.commandBlocked,
         'This device has not been verified as an OBD scanner, so no commands '
@@ -146,7 +152,10 @@ class ElmChannel {
       );
     }
     if (transport.state != LinkState.connected) {
-      throw const ObdException(ObdFailure.notReady, 'Scanner is not connected.');
+      throw const ObdException(
+        ObdFailure.notReady,
+        'Scanner is not connected.',
+      );
     }
 
     if (_awaitingLatePrompt) await _waitForLatePrompt();
@@ -178,8 +187,10 @@ class ElmChannel {
       _pending = null;
       _awaitingLatePrompt = true;
       timeouts++;
-      log.warn(LogCategory.rx,
-          'Timeout after ${timeout.inMilliseconds} ms waiting for $command');
+      log.warn(
+        LogCategory.rx,
+        'Timeout after ${timeout.inMilliseconds} ms waiting for $command',
+      );
       _record(started, command, _framer.pending, null, sw.elapsed, 'timeout');
       throw ObdException(
         ObdFailure.timeout,
@@ -192,8 +203,11 @@ class ElmChannel {
     final shown = Redactor.isSensitiveCommand(command)
         ? '[${reply.lines.length} line(s) – identifying data not logged]'
         : _printable(raw);
-    log.info(LogCategory.rx, '< $shown  [${reply.status.name}, '
-        '${sw.elapsedMilliseconds} ms]');
+    log.info(
+      LogCategory.rx,
+      '< $shown  [${reply.status.name}, '
+      '${sw.elapsedMilliseconds} ms]',
+    );
     _record(started, command, shown, reply.status, sw.elapsed, null);
     return reply;
   }
@@ -236,10 +250,12 @@ class ElmChannel {
     final p = _pending;
     _pending = null;
     if (p != null && !p.isCompleted) {
-      p.completeError(const TransportException(
-        TransportFailure.disconnected,
-        'The scanner disconnected.',
-      ));
+      p.completeError(
+        const TransportException(
+          TransportFailure.disconnected,
+          'The scanner disconnected.',
+        ),
+      );
     }
   }
 
@@ -251,14 +267,16 @@ class ElmChannel {
     Duration elapsed,
     String? error,
   ) {
-    _history.addLast(ExchangeRecord(
-      time: time,
-      command: command,
-      response: Redactor.text(response),
-      status: status,
-      elapsed: elapsed,
-      error: error,
-    ));
+    _history.addLast(
+      ExchangeRecord(
+        time: time,
+        command: command,
+        response: Redactor.text(response),
+        status: status,
+        elapsed: elapsed,
+        error: error,
+      ),
+    );
     while (_history.length > historyCapacity) {
       _history.removeFirst();
     }

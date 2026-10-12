@@ -17,8 +17,8 @@ class SimulatedTransport extends BaseTransport {
     this.chunkSize = 20,
     DateTime Function()? clock,
   }) : device = SimulatedElm327(
-          vehicle: SimulatedVehicle.forScenario(scenario, clock: clock),
-        );
+         vehicle: SimulatedVehicle.forScenario(scenario, clock: clock),
+       );
 
   final SimulatedElm327 device;
   final Duration latency;
@@ -34,12 +34,12 @@ class SimulatedTransport extends BaseTransport {
 
   @override
   TransportDetails get details => TransportDetails(
-        kind: TransportKind.simulated,
-        deviceId: simulatedDeviceId,
-        deviceName: 'Demo IQ (simulated)',
-        profileName: 'Simulated ELM327 v1.5 – ${device.vehicle.scenario.title}',
-        profileSource: 'Built-in simulator (no hardware)',
-      );
+    kind: TransportKind.simulated,
+    deviceId: simulatedDeviceId,
+    deviceName: 'Demo IQ (simulated)',
+    profileName: 'Simulated ELM327 v1.5 – ${device.vehicle.scenario.title}',
+    profileSource: 'Built-in simulator (no hardware)',
+  );
 
   @override
   bool get carriesElmSerial => state == LinkState.connected;

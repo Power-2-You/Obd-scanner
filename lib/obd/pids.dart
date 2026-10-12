@@ -29,7 +29,8 @@ class PidDefinition {
   final int decimals;
   final double Function(List<int> d) decode;
 
-  String get command => '01${pid.toRadixString(16).padLeft(2, '0').toUpperCase()}';
+  String get command =>
+      '01${pid.toRadixString(16).padLeft(2, '0').toUpperCase()}';
   String get hexId => pid.toRadixString(16).padLeft(2, '0').toUpperCase();
 }
 
@@ -273,7 +274,7 @@ class SupportedPids {
   }
 
   SupportedPids merge(int base, Set<int> more) => SupportedPids(
-        {...pids, ...more},
-        queriedRanges: {...queriedRanges, base},
-      );
+    {...pids, ...more},
+    queriedRanges: {...queriedRanges, base},
+  );
 }

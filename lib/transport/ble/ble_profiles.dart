@@ -13,7 +13,9 @@ String bleUuid(String short) {
 
 String shortUuid(String uuid) {
   final u = uuid.toLowerCase();
-  if (u.length == 36 && u.endsWith('-0000-1000-8000-00805f9b34fb') && u.startsWith('0000')) {
+  if (u.length == 36 &&
+      u.endsWith('-0000-1000-8000-00805f9b34fb') &&
+      u.startsWith('0000')) {
     return u.substring(4, 8).toUpperCase();
   }
   return u.toUpperCase();
@@ -97,14 +99,24 @@ class BleProfiles {
   /// Result of matching a discovered GATT table against documented profiles.
   static ProfileMatch match(List<GattServiceInfo> services) {
     for (final profile in documented) {
-      final service = services.where((s) => s.uuid.toLowerCase() == profile.serviceUuid);
+      final service = services.where(
+        (s) => s.uuid.toLowerCase() == profile.serviceUuid,
+      );
       if (service.isEmpty) continue;
       final chars = service.first.characteristics;
-      final notify = chars.where((c) => c.uuid.toLowerCase() == profile.notifyUuid);
-      final write = chars.where((c) => c.uuid.toLowerCase() == profile.writeUuid);
+      final notify = chars.where(
+        (c) => c.uuid.toLowerCase() == profile.notifyUuid,
+      );
+      final write = chars.where(
+        (c) => c.uuid.toLowerCase() == profile.writeUuid,
+      );
       if (notify.isEmpty || write.isEmpty) continue;
-      final canNotify = notify.first.properties.any((p) => p == 'notify' || p == 'indicate');
-      final canWrite = write.first.properties.any((p) => p == 'write' || p == 'writeWithoutResponse');
+      final canNotify = notify.first.properties.any(
+        (p) => p == 'notify' || p == 'indicate',
+      );
+      final canWrite = write.first.properties.any(
+        (p) => p == 'write' || p == 'writeWithoutResponse',
+      );
       if (!canNotify || !canWrite) continue;
       return ProfileMatch(
         profile: profile,
