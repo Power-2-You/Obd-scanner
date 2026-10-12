@@ -188,26 +188,78 @@ void main() {
   });
 
   group('Safety gates', () {
-    test('non-ELM device: only ATZ is sent, then session refuses', () async {
-      final t = ScriptedTransport({'ATZ': 'HELLO FROM PUMP\r\r>'});
-      await t.open();
+    Elm327Session sessionOn(ScriptedTransport t) {
       final log = DiagnosticLog();
-      final s = Elm327Session(
+      return Elm327Session(
         channel: ElmChannel(transport: t, log: log),
         log: log,
       );
-      await expectLater(
-        s.identify(),
-        throwsA(
-          isA<ObdException>().having(
-            (e) => e.failure,
-            'failure',
-            ObdFailure.notElmCompatible,
-          ),
-        ),
-      );
+    }
+
+    final notElm = throwsA(
+      isA<ObdException>().having(
+        (e) => e.failure,
+        'failure',
+        ObdFailure.notElmCompatible,
+      ),
+    );
+
+    test('non-ELM device: only identification probes, then refuses', () async {
+      final t = ScriptedTransport({
+        'ATZ': 'HELLO FROM PUMP\r\r>',
+        'ATI': '?\r\r>',
+      });
+      await t.open();
+      final s = sessionOn(t);
+      await expectLater(s.identify(), notElm);
       expect(() => s.initialise(), throwsA(isA<ObdException>()));
-      expect(t.written, ['ATZ']);
+      // ATI answered "?", so ATE0 was never sent.
+      expect(t.written, ['ATZ', 'ATI']);
+    });
+
+    test('unbranded module following the ELM327 AT set is accepted', () async {
+      // Supplier documentation lists the ELM327 AT command set but not the
+      // module's version string – e.g. a generic "OBDII V1.5" banner.
+      final t = ScriptedTransport({
+        'ATZ': '\r\rOBDII V1.5\r\r>',
+        'ATI': 'ATI\rOBDII V1.5\r\r>',
+        'ATE0': 'ATE0\rOK\r\r>',
+      });
+      await t.open();
+      final s = sessionOn(t);
+      final id = await s.identify();
+      expect(id.family, 'ELM327-compatible');
+      expect(id.verifiedByBehaviour, isTrue);
+      expect(id.banner, 'OBDII V1.5');
+      expect(s.warnings.single, contains('ELM327 AT command set'));
+      expect(t.written, ['ATZ', 'ATI', 'ATE0']);
+    });
+
+    test('ELM banner on ATI is enough even if ATZ printed nothing', () async {
+      final t = ScriptedTransport({'ATZ': '\r\r>', 'ATI': 'ELM327 v2.1\r\r>'});
+      await t.open();
+      final id = await sessionOn(t).identify();
+      expect(id.family, 'ELM327');
+      expect(id.version, '2.1');
+      expect(t.written, ['ATZ', 'ATI']);
+    });
+
+    test('device that answers ATI but rejects ATE0 is refused', () async {
+      final t = ScriptedTransport({
+        'ATZ': 'GADGET\r\r>',
+        'ATI': 'GADGET 3000\r\r>',
+        'ATE0': '?\r\r>',
+      });
+      await t.open();
+      await expectLater(sessionOn(t).identify(), notElm);
+      expect(t.written, ['ATZ', 'ATI', 'ATE0']);
+    });
+
+    test('silent device times out on ATI and is refused', () async {
+      final t = ScriptedTransport({'ATZ': 'SOMETHING\r\r>'});
+      await t.open();
+      await expectLater(sessionOn(t).identify(), notElm);
+      expect(t.written, ['ATZ', 'ATI']);
     });
 
     test('unverified transport: nothing is written at all', () async {

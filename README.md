@@ -7,10 +7,11 @@ diagnostic reports.
 
 > **Honest status:** the app is fully functional with its built-in
 > **simulated scanner**, and the Bluetooth/ELM327 stack is implemented and
-> tested against synthetic data. It has **not yet been connected to a real
-> IQ**, because the IQ's communication details are unverified. See
-> [docs/HARDWARE_INVESTIGATION.md](docs/HARDWARE_INVESTIGATION.md) for what
-> is needed.
+> tested against synthetic data. The supplier's protocol document confirms
+> the IQ's OBD module uses the ELM327 AT command set the app implements, but
+> the app has **not yet been connected to a real IQ** and the Bluetooth
+> details are still unconfirmed. See
+> [docs/HARDWARE_INVESTIGATION.md](docs/HARDWARE_INVESTIGATION.md).
 
 | Dashboard | Fault codes | Fault detail | AI mechanic |
 |---|---|---|---|
@@ -103,7 +104,7 @@ iOS apps can only be built on a Mac with Xcode.
 
 ```bash
 flutter analyze
-flutter test                                   # 71 tests
+flutter test                                   # 75 tests
 flutter test integration_test -d <device-id>   # on a phone or simulator
 cd backend/ai_proxy && npm install && npm test # 16 tests
 ```
@@ -126,13 +127,14 @@ cd backend/ai_proxy && npm install && npm test # 16 tests
 
 ## What I still need about the IQ
 
-1. Any manufacturer documentation for the diagnostic module (chip,
-   Bluetooth module, protocol).
+1. The supplier's answers to the questions at the end of
+   [docs/HARDWARE_INVESTIGATION.md](docs/HARDWARE_INVESTIGATION.md)
+   (Bluetooth UUIDs / device name, or Wi-Fi address; `ATI` text). They're
+   written in English and Chinese.
 2. Mini OBDII's connection setting for the IQ (Bluetooth 4.0 / Wi-Fi), as a
    screenshot.
 3. The hardware report from step 3 above (or an nRF Connect screenshot of
    the IQ's services and characteristics).
-4. IQ model/part numbers.
 
 Details and the full verification checklist:
 [docs/HARDWARE_INVESTIGATION.md](docs/HARDWARE_INVESTIGATION.md).

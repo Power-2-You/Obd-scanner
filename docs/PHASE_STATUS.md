@@ -7,7 +7,7 @@ Checks run for this report (Linux build machine, Flutter 3.47.7 / Dart
 3.13.5, Node 22):
 
 * `flutter analyze` – no issues
-* `flutter test` – 71 tests pass (parsers, sessions, transports, AI client,
+* `flutter test` – 75 tests pass (parsers, sessions, transports, AI client,
   full-UI widget flows)
 * `npm test` in `backend/ai_proxy` – 16 tests pass
 * `flutter build web --dart-define=PREVIEW=true` – builds; screenshots in
@@ -22,7 +22,7 @@ Checks run for this report (Linux build machine, Flutter 3.47.7 / Dart
 | 3. Transport abstraction + BLE discovery | 🟡 | Transport interface; BLE discovery/connection code; tested against a fake radio | Real BLE scan on iPhone |
 | 4. Scanner communication + OBD parsing | ✅ / 🟡 | ELM327 session, queue, timeouts, retries, CAN 11/29, ISO-TP, legacy, multi-ECU, error states, all unit-tested with synthetic fixtures | Real ELM327 responses from the IQ |
 | 5. Tests + diagnostic logs | ✅ | Unit, integration (simulated) and widget tests; redacted log; developer screen; milestone runner | Recorded fixtures from the IQ |
-| 6. IQ integration | ⛔ | IQ adapter placeholder with safety gates | **Protocol/GATT details of the IQ** – see HARDWARE_INVESTIGATION.md |
+| 6. IQ integration | 🟡 / ⛔ | Command layer confirmed by the supplier document (ELM327 AT set, protocols 1–9) and already implemented, including unbranded-banner acceptance | **Radio link details** (BLE UUIDs / name, or Wi-Fi address) – see questions in HARDWARE_INVESTIGATION.md |
 | 7. Garage, history, reports | ✅ | Vehicle profiles, VIN read/mask, saved reports, share sheet text report | Share sheet on device |
 | 8. AI mechanic + secure backend | ✅ / 🟡 | Proxy with schema-constrained answers, VIN scrubbing, rate limits; app client + UI | An Anthropic API key and a deployed HTTPS proxy |
 | 9. Performance, permissions, privacy, release | 🟡 | Info.plist purpose strings, Android permissions, portrait lock, export-compliance flag, privacy design | See release checklist below |

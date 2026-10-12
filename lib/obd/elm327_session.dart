@@ -16,6 +16,7 @@ class ScannerIdentity {
     required this.banner,
     required this.family,
     this.version,
+    this.verifiedByBehaviour = false,
   });
 
   /// Raw identification text, e.g. "ELM327 v1.5".
@@ -24,6 +25,10 @@ class ScannerIdentity {
   /// ELM327, STN (OBDLink) or unrecognised.
   final String family;
   final String? version;
+
+  /// True when the banner was not a known brand but the device answered ATI
+  /// and acknowledged ATE0 exactly as the ELM327 command set specifies.
+  final bool verifiedByBehaviour;
 
   bool get recognised => family != 'unrecognised';
 
@@ -109,8 +114,9 @@ class DtcReadResult {
 /// initialisation and read-only OBD-II requests.
 ///
 /// Guarantees:
-///  * Nothing except `ATZ` is sent until the device identifies itself as an
-///    ELM327/STN-compatible interpreter.
+///  * Nothing except `ATZ` (and, for unbranded banners, `ATI` / `ATE0`) is
+///    sent until the device identifies itself as, or behaves as, an
+///    ELM327-compatible interpreter.
 ///  * No OBD request is sent until initialisation has completed.
 ///  * Only read-only services are used (see CommandPolicy).
 class Elm327Session {
@@ -138,7 +144,8 @@ class Elm327Session {
       retries: 1,
     );
     final banner = reply.lines.join(' ');
-    final id = ScannerIdentity.fromBanner(banner);
+    var id = ScannerIdentity.fromBanner(banner);
+    if (!id.recognised) id = await _identifyByBehaviour(banner);
     identity = id;
     if (!id.recognised) {
       log.error(
@@ -157,6 +164,53 @@ class Elm327Session {
       'Scanner identified: ${id.family} ${id.version ?? ''}'.trim(),
     );
     return id;
+  }
+
+  /// The supplier document for the IQ's OBD module ("OBD 产品通信协议") lists
+  /// the ELM327 AT command set but not the module's version string, and
+  /// unbranded modules often print something other than "ELM327". When the
+  /// ATZ banner is not a known brand, confirm ELM327 behaviour instead:
+  /// `ATI` must return an identification (not `?`) and `ATE0` must be
+  /// acknowledged with `OK`. Both commands are read-only and in the
+  /// supplier's documented command list.
+  Future<ScannerIdentity> _identifyByBehaviour(String atzBanner) async {
+    final unrecognised = ScannerIdentity(
+      banner: atzBanner,
+      family: 'unrecognised',
+    );
+    try {
+      final ati = await channel.send(
+        'ATI',
+        timeout: const Duration(seconds: 2),
+      );
+      final atiText = ati.lines.join(' ').trim();
+      final byAti = ScannerIdentity.fromBanner(atiText);
+      if (byAti.recognised) return byAti;
+      if (!ati.isOk || atiText.isEmpty) return unrecognised;
+
+      final echoOff = await channel.send(
+        'ATE0',
+        timeout: const Duration(seconds: 2),
+      );
+      if (!echoOff.hasOkToken) return unrecognised;
+
+      warnings.add(
+        'Scanner identifies as "$atiText" (not a known brand); accepted '
+        'because it follows the ELM327 AT command set (ATI answered, ATE0 OK).',
+      );
+      log.warn(
+        LogCategory.connection,
+        'Unbranded ELM327-compatible interpreter accepted by behaviour: '
+        '"$atiText"',
+      );
+      return ScannerIdentity(
+        banner: atiText,
+        family: 'ELM327-compatible',
+        verifiedByBehaviour: true,
+      );
+    } on ObdException {
+      return unrecognised;
+    }
   }
 
   Future<void> initialise() async {

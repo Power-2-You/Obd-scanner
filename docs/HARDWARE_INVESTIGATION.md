@@ -1,8 +1,10 @@
 # Boost N' Inflate IQ – hardware investigation
 
-Status: **NOT VERIFIED.** No IQ unit, manufacturer documentation or captured
-traffic was available while building this app. Nothing in the codebase claims
-that the app has connected to an IQ.
+Status: **command protocol documented, radio link NOT VERIFIED.** The
+supplier's protocol document (below) confirms the IQ's OBD module speaks the
+ELM327 AT command set, which the app already implements. The app has still
+not been connected to a real IQ, and the Bluetooth details needed to reach it
+are not in the document.
 
 ## What is known
 
@@ -11,6 +13,28 @@ that the app has connected to an IQ.
 | The IQ contains an OBD diagnostic scanner. | My Garage Hero product description |
 | The third-party iPhone app **Mini OBDII** shows diagnostic data from the IQ. | My Garage Hero |
 | SwiftOBD2 (the library behind the SwiftOBD2App you referenced) talks to ELM327 adapters over three documented BLE GATT layouts and a Wi-Fi TCP endpoint. | `kkonteh97/SwiftOBD2`, `BLEConnection.swift`, `BLECharacteristicHandler.swift`, `wifiManager.swift` (MIT) |
+| The OBD module is **request/response over the ELM327 AT command set**: the app sends AT or OBD commands, the module answers. Every command this app sends (`ATZ`, `ATI`, `ATE0`, `ATL0`, `ATS0`, `ATH1`, `ATSP0`, `ATDP`, `ATDPN`, `ATRV`, modes 01/03/07/09) is in the supplier's list. | Supplier document §5–6 |
+| It supports OBD-II protocols 1–9: SAE J1850 PWM/VPW, ISO 9141-2, ISO 14230-4 KWP (5-baud and fast init), ISO 15765-4 CAN 11/29-bit at 500/250 kbaud – the same numbering as `ATSP`/`ATDPN`, already handled by the parser. | Supplier document §4, product image |
+| The module family (MCU + CAN / K-line / J1850 interface circuits) can output over **Bluetooth, Wi-Fi, RS232 or GPRS**. | Supplier document §2 block diagram |
+| OBD modes 1–9 follow ISO 15031-5; mode 03 legacy frames carry three DTCs each. Matches the app's decoder. | Supplier document §6 |
+
+The supplier document is *"OBD 产品通信协议"* (OBD product communication
+protocol, 14 pages), received 12 Oct 2026. It is **not committed** to this
+public repository; keep it in your own records.
+
+### Notes on the supplier document
+
+* **MAF formula typo:** PID `10` is listed as `(A*256)+B`, but the stated
+  range (0–655.4 g/s) only works with the SAE J1979 formula
+  `((A*256)+B)/100`. The app uses the standard formula.
+* **Product image typo:** protocol 9 is printed as "251 Kbaud"; the standard
+  (and the document's own §4) says 250 kbaud.
+* The document also lists mode 04 (clear codes) and mode 08 (actuator
+  control). The app still blocks both, as required.
+* The document does **not** state the module's `ATI` version string. The app
+  therefore accepts an unbranded module if it answers `ATI` and acknowledges
+  `ATE0` with `OK` (behaviour defined by the documented command set), in
+  addition to banners naming ELM327 / STN / OBDLink.
 
 ## What is inferred (not verified)
 
@@ -19,9 +43,13 @@ that the app has connected to an IQ.
   (External Accessory framework). Generic OBD apps like Mini OBDII therefore
   normally use **Bluetooth LE** or **Wi-Fi**. If the IQ appears in
   *Settings › Bluetooth* as a paired accessory, it may be MFi – tell me.
-* **ELM327 compatibility is likely but unconfirmed.** Mini OBDII is an
-  ELM327-oriented app, so the IQ's scanner probably speaks the ELM327 command
-  set. A proprietary protocol is still possible.
+* **Which radio the IQ uses.** The module family supports Bluetooth, Wi-Fi,
+  RS232 and GPRS. Mini OBDII working on iPhone points to Bluetooth LE or
+  Wi-Fi, but the IQ's actual fit is not stated.
+* **The BLE GATT layout.** If the IQ uses Bluetooth LE, the app can only talk
+  to it if it uses one of the documented serial layouts below (or a layout
+  the supplier documents). Many ELM327-compatible BLE modules use `FFF0` or
+  `FFE0`, but that is not confirmed for the IQ.
 
 ## What the app does about it
 
@@ -55,9 +83,8 @@ charging functions. The app never sends firmware commands.
 
 ## What I need from you (in order of usefulness)
 
-1. **Any manufacturer documentation** for the IQ's diagnostic module: OBD chip
-   (e.g. ELM327 clone, STN1110/2120, custom), Bluetooth module part number,
-   protocol sheet, or FCC/RCM test reports (these often list the radio module).
+1. **Answers from the supplier** to the questions below (the protocol
+   document covers the command layer but not the radio link).
 2. **How Mini OBDII is set up for the IQ.** In Mini OBDII settings, which
    connection type is selected (Bluetooth 4.0/BLE, Wi-Fi, or other)? Any
    device name shown? Screenshot it.
@@ -110,3 +137,28 @@ charging functions. The app never sends firmware commands.
   specification. Implement it as a new `ObdTransport` + session in
   `lib/transport/iq/`. The UI, parsing of standard OBD data, storage and AI
   layers remain unchanged.
+
+## Questions for the supplier
+
+Copy and send these. The Chinese version is for the supplier's engineers.
+
+1. Which output link does the Boost N' Inflate IQ use: Bluetooth Low Energy
+   (BLE 4.x/5.x), Bluetooth Classic (SPP), Wi-Fi, or another?
+2. If BLE: the advertised device name, the GATT service UUID, the notify
+   characteristic UUID and the write characteristic UUID (and whether writes
+   are "with response" or "without response").
+3. If Wi-Fi: the network name (SSID), the IP address and the TCP port.
+4. The exact text the module returns for `ATZ` and `ATI`.
+5. The Bluetooth module part number and the main MCU / OBD chip.
+6. Is any pairing PIN or password required?
+
+**中文：**
+
+1. Boost N' Inflate IQ 使用哪种对外通信方式：低功耗蓝牙（BLE 4.x/5.x）、
+   经典蓝牙（SPP）、WiFi，还是其他方式？
+2. 如果是 BLE：请提供广播的设备名称、GATT 服务 UUID、通知（Notify）特征值
+   UUID、写入（Write）特征值 UUID，以及写入方式是"有响应"还是"无响应"。
+3. 如果是 WiFi：请提供 WiFi 名称（SSID）、IP 地址和 TCP 端口号。
+4. 模块对 `ATZ` 和 `ATI` 命令返回的完整字符串是什么？
+5. 蓝牙模块型号，以及主控 MCU / OBD 芯片型号。
+6. 连接时是否需要配对码或密码？

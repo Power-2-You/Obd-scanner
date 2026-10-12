@@ -598,6 +598,8 @@ class _ConnectedCard extends StatelessWidget {
                   Pill(
                     d.kind == TransportKind.simulated
                         ? 'Simulated'
+                        : (s.identity?.verifiedByBehaviour ?? false)
+                        ? 'ELM327-compatible'
                         : 'Verified ELM327',
                     color: d.kind == TransportKind.simulated
                         ? BrandColors.yellow
