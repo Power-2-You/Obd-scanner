@@ -15,6 +15,10 @@ class AppConfig {
     defaultValue: 'mgh-iq-ios',
   );
 
+  /// Optional value for the proxy's APP_SHARED_KEY check. Deters casual
+  /// abuse only – it is extractable from the binary, so it is not a secret.
+  static const String appSharedKey = String.fromEnvironment('APP_SHARED_KEY');
+
   static const String appVersion = '1.0.0';
 
   static bool get aiConfigured => aiProxyUrl.isNotEmpty;

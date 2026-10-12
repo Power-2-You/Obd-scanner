@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import 'app/app.dart';
 import 'app/app_services.dart';
+import 'app/preview_harness.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,6 +13,7 @@ Future<void> main() async {
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
 
   final services = await AppServices.create();
+  await PreviewHarness.apply(services); // no-op outside web preview builds
 
   FlutterError.onError = (details) {
     FlutterError.presentError(details);

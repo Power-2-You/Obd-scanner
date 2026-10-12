@@ -324,7 +324,7 @@ class _ConnectScreenState extends State<ConnectScreen> {
               _DeviceSection(
                 title: 'Compatible scanners',
                 devices: d.candidates,
-                emptyText: d.scanning ? 'Looking for your IQ…' : 'No scanners found yet. Make sure the IQ is on and its OBD cable is plugged in.',
+                emptyText: d.scanning ? 'Looking for your IQ…' : 'No scanners found yet. Make sure the IQ is on and its OBD-II scanner is connected to the car.',
                 onTap: _connectBle,
               ),
               if (d.others.isNotEmpty) ...[
@@ -425,7 +425,7 @@ class _StatusHeader extends StatelessWidget {
         : 'Let\'s find your IQ';
     final subtitle = c.isReady
         ? 'Head to the dashboard to see live data.'
-        : 'Plug the IQ\'s OBD cable in, turn the ignition on, and keep your phone close.';
+        : 'Connect the IQ\'s OBD-II scanner to the car, turn the ignition on, and keep your phone close.';
     return Column(
       children: [
         IqHeroGraphic(
@@ -832,8 +832,8 @@ class _Troubleshooting extends StatelessWidget {
       'Most cars only answer diagnostic requests with the ignition on or the engine running.',
     ),
     (
-      'Cable fully seated',
-      'The OBD-II port is usually under the dashboard near the steering column. Push the plug in firmly.',
+      'Firmly connected',
+      'The OBD-II port is usually under the dashboard near the steering column. Make sure the scanner\'s connector is pushed fully in.',
     ),
     (
       'Close other apps',

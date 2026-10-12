@@ -130,7 +130,7 @@ class _IntroPage extends StatelessWidget {
         const SizedBox(height: 12),
         const Text(
           'The Boost N\' Inflate IQ already jump starts, inflates and lights the '
-          'way. Plug its diagnostic cable into your car\'s OBD-II port and this '
+          'way. Connect its OBD-II scanner to your car\'s diagnostic port and this '
           'app turns it into a clear, friendly window into your vehicle\'s health.',
           style: TextStyle(color: BrandColors.muted, fontSize: 16, height: 1.5),
         ),
@@ -279,7 +279,7 @@ class _BluetoothPage extends StatelessWidget {
         const SizedBox(height: 16),
         const InfoNote(
           text:
-              'Before connecting: plug the IQ\'s OBD cable into the port under '
+              'Before connecting: connect the IQ\'s OBD-II scanner to the port under '
               'your dashboard and turn the ignition on.',
           icon: Icons.lightbulb_outline,
           color: BrandColors.yellow,

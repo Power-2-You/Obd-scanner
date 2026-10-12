@@ -34,7 +34,7 @@ class BackendAiMechanicService implements AiMechanicService {
   BackendAiMechanicService({
     required this.baseUrl,
     http.Client? client,
-    this.timeout = const Duration(seconds: 45),
+    this.timeout = const Duration(seconds: 90),
   }) : _client = client ?? http.Client();
 
   final String baseUrl;
@@ -56,6 +56,8 @@ class BackendAiMechanicService implements AiMechanicService {
               'content-type': 'application/json',
               'x-app-client': AppConfig.appClientId,
               'x-app-version': AppConfig.appVersion,
+              if (AppConfig.appSharedKey.isNotEmpty)
+                'x-app-key': AppConfig.appSharedKey,
             },
             body: jsonEncode(request.toJson()),
           )

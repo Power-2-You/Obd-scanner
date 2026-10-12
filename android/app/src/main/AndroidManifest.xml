@@ -1,6 +1,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Bluetooth LE scanner access. Android 12+ (API 31+): scan without
+         location; older versions need location for BLE scanning. -->
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"
+        android:maxSdkVersion="30" />
+    <!-- AI mechanic proxy and Wi-Fi scanners. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="false" />
+
     <application
-        android:label="my_garage_hero_iq"
+        android:label="Garage Hero IQ"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../app/preview_harness.dart';
 import '../../core/settings/settings_repository.dart';
+import '../../dtc/fault_scan_controller.dart';
+import '../developer/developer_screen.dart';
+import '../faults/fault_detail_screen.dart';
+import '../report/report_screen.dart';
 import '../ai/ai_mechanic_screen.dart';
 import '../connect/connect_screen.dart';
 import '../dashboard/dashboard_screen.dart';
@@ -30,7 +35,7 @@ class HomeShell extends StatefulWidget {
 }
 
 class _HomeShellState extends State<HomeShell> {
-  int _index = 0;
+  int _index = PreviewHarness.initialTab;
 
   @override
   void initState() {
@@ -41,7 +46,24 @@ class _HomeShellState extends State<HomeShell> {
         settings.openConnectOnHome = false;
         ConnectScreen.open(context);
       }
+      if (PreviewHarness.enabled && mounted) _openPreviewRoute();
     });
+  }
+
+  void _openPreviewRoute() {
+    final faults = context.read<FaultScanController>();
+    switch (PreviewHarness.screen) {
+      case 'connect':
+        ConnectScreen.open(context);
+      case 'developer':
+        DeveloperScreen.open(context);
+      case 'report':
+        ReportScreen.openDraft(context);
+      case 'fault':
+        if (faults.allCodes.isNotEmpty) {
+          FaultDetailScreen.open(context, faults.allCodes.first);
+        }
+    }
   }
 
   void _select(int i) {
