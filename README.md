@@ -100,6 +100,15 @@ iOS apps can only be built on a Mac with Xcode.
    flutter run -d <iphone-id> --dart-define=AI_PROXY_URL=https://your-proxy.example.com
    ```
 
+## Mockup for a mate's phone (Expo Go, no Mac)
+
+`mockups/expo-iq` is a separate React Native prototype of the pairing flow
+(open app → *Pair device* → Bluetooth list like finding earphones → tap →
+connected, no PIN → dashboard). It runs in the free **Expo Go** app on iPhone
+or Android from any computer with Node.js. **Every device and reading in it is
+simulated** – Expo Go cannot use Bluetooth, so it never talks to a real IQ.
+Steps and screenshots: [mockups/expo-iq/README.md](mockups/expo-iq/README.md).
+
 ## Run the checks
 
 ```bash
