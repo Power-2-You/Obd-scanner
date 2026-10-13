@@ -35,6 +35,11 @@ public repository; keep it in your own records.
   therefore accepts an unbranded module if it answers `ATI` and acknowledges
   `ATE0` with `OK` (behaviour defined by the documented command set), in
   addition to banners naming ELM327 / STN / OBDLink.
+* **No pairing PIN or password is required** (answer from the product owner,
+  13 Oct 2026 – supplier question 6). This matches the in-app Bluetooth LE
+  flow the app already implements: the IQ is chosen from a list inside the
+  app, like finding a pair of earphones, with no code entry and nothing to
+  do in iOS Settings. The app has no PIN prompt.
 
 ## What is inferred (not verified)
 
@@ -150,7 +155,7 @@ Copy and send these. The Chinese version is for the supplier's engineers.
 3. If Wi-Fi: the network name (SSID), the IP address and the TCP port.
 4. The exact text the module returns for `ATZ` and `ATI`.
 5. The Bluetooth module part number and the main MCU / OBD chip.
-6. Is any pairing PIN or password required?
+6. ~~Is any pairing PIN or password required?~~ **Answered: no PIN.**
 
 **中文：**
 
@@ -161,4 +166,4 @@ Copy and send these. The Chinese version is for the supplier's engineers.
 3. 如果是 WiFi：请提供 WiFi 名称（SSID）、IP 地址和 TCP 端口号。
 4. 模块对 `ATZ` 和 `ATI` 命令返回的完整字符串是什么？
 5. 蓝牙模块型号，以及主控 MCU / OBD 芯片型号。
-6. 连接时是否需要配对码或密码？
+6. ~~连接时是否需要配对码或密码？~~ 已确认：不需要配对码。
