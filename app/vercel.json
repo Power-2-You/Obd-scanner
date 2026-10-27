@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    { "source": "/products.json", "destination": "https://mygaragehero.com/products.json?limit=250" }
+  ],
+  "headers": [
+    { "source": "/(.*)", "headers": [
+      { "key": "X-Robots-Tag", "value": "noindex, nofollow" },
+      { "key": "Referrer-Policy", "value": "no-referrer" },
+      { "key": "Permissions-Policy", "value": "bluetooth=(self)" }
+    ]}
+  ]
+}

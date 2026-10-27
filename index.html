@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Garage Hero IQ – demo</title>
+<meta name="description" content="Try the My Garage Hero IQ app in your browser with the built-in demo scanner.">
+<link rel="icon" href="mark.png">
+<style>
+  :root { --bg:#121417; --panel:#1c1f23; --raised:#23272c; --text:#f3f3f3; --muted:#9aa1a9; --gold:#ebc565; --line:#30353b; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: radial-gradient(1200px 600px at 30% -10%, #2a2416 0%, var(--bg) 55%) fixed, var(--bg); color: var(--text);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  .wrap { min-height: 100%; display: flex; align-items: center; justify-content: center; gap: 56px; padding: 32px 24px; }
+  .info { max-width: 360px; }
+  .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+  .brand img { width: 44px; height: 44px; }
+  .brand b { font-size: 13px; letter-spacing: .12em; color: var(--muted); font-weight: 600; }
+  h1 { font-size: 30px; line-height: 1.15; margin: 0 0 10px; letter-spacing: -.02em; }
+  p { color: var(--muted); margin: 0 0 18px; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 600; color: #17191c; background: var(--gold); border-radius: 999px; padding: 3px 10px; margin-bottom: 14px; }
+  .jumps { display: grid; gap: 8px; margin: 18px 0 22px; }
+  .jumps button { all: unset; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: var(--panel);
+    border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; color: var(--text); font-weight: 600; min-height: 20px; }
+  .jumps button span { color: var(--muted); font-weight: 400; font-size: 13px; }
+  .jumps button:hover, .jumps button:focus-visible { border-color: var(--gold); }
+  .jumps button[aria-pressed="true"] { border-color: var(--gold); background: var(--raised); }
+  a { color: var(--gold); }
+  .small { font-size: 13px; }
+  /* The frame is an iPhone at real size, scaled down to fit short windows. */
+  .stage { --s: 1; width: calc(417px * var(--s)); height: calc(876px * var(--s)); flex: none; }
+  .phone { width: 417px; height: 876px; border-radius: 64px; padding: 12px; background: #0b0c0d;
+    box-shadow: 0 0 0 2px #2b3036, 0 30px 80px rgba(0,0,0,.55); transform: scale(var(--s)); transform-origin: top left; }
+  .phone iframe { width: 393px; height: 852px; border: 0; border-radius: 52px; background: #17191c; display: block; }
+  @media (max-width: 860px) { .wrap { flex-direction: column; } }
+</style>
+<script>
+  // Phones get the app full screen; computers get it in an iPhone-sized frame.
+  if (Math.min(screen.width, window.innerWidth) < 700) {
+    location.replace('app/' + location.search);
+  }
+</script>
+</head>
+<body>
+<main class="wrap">
+  <section class="info" aria-label="About this demo">
+    <div class="brand"><img src="mark.png" alt=""><b>MY GARAGE HERO</b></div>
+    <span class="tag">Test build</span>
+    <h1>Garage Hero IQ</h1>
+    <p>The companion app for the Boost N' Inflate IQ, running in your browser. Use <strong>Try the demo IQ</strong> to connect a simulated car – every number you see is labelled as simulated.</p>
+    <div class="jumps" role="group" aria-label="Jump to a screen">
+      <button data-q="" aria-pressed="true">Start from the beginning <span>intro and connect</span></button>
+      <button data-q="screen=dashboard&scenario=turboDiesel">Live dashboard <span>turbo-diesel ute</span></button>
+      <button data-q="screen=faults&scenario=recentlyCleared">Used-car check <span>codes recently cleared</span></button>
+      <button data-q="screen=fault&scenario=checkEngine">Fault code detail <span>check-engine light on</span></button>
+      <button data-q="screen=ai&scenario=checkEngine">Mechanic guide <span>answers from the scan</span></button>
+      <button data-q="screen=battery&scenario=healthyDriving">Battery &amp; charging test <span>guided steps</span></button>
+      <button data-q="screen=report&scenario=checkEngine">Diagnostic report <span>shareable</span></button>
+    </div>
+    <p class="small">Nothing is saved between visits in this web demo, and Bluetooth scanners only work in the iPhone app. <a id="full" href="app/">Open full screen</a></p>
+  </section>
+  <div class="stage" id="stage"><div class="phone"><iframe id="app" title="Garage Hero IQ app" src="app/" allow="bluetooth; clipboard-write"></iframe></div></div>
+</main>
+<script>
+  const stage = document.getElementById('stage');
+  function fit() {
+    const s = Math.min(1, (window.innerHeight - 48) / 876);
+    stage.style.setProperty('--s', Math.max(0.55, s).toFixed(3));
+  }
+  fit();
+  window.addEventListener('resize', fit);
+  const frame = document.getElementById('app');
+  const full = document.getElementById('full');
+  function go(q) {
+    const url = 'app/' + (q ? '?' + q : '');
+    frame.src = url;
+    full.href = url;
+    document.querySelectorAll('.jumps button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.q === q)));
+  }
+  document.querySelectorAll('.jumps button').forEach(b => b.addEventListener('click', () => go(b.dataset.q)));
+  if (location.search) go(location.search.slice(1));
+</script>
+</body>
+</html>
